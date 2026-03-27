@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}School Management Platform - Complete Solution{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── HERO ───────────────────────────────────────────────── */
+.hero {
+  min-height: 85vh;
+  display: flex; align-items: center;
+  background: linear-gradient(135deg, #fffbf2 0%, #fff8e8 50%, #fff4d6 100%);
+  position: relative; overflow: hidden;
+}
+.hero-pattern {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image: radial-gradient(circle at 20% 50%, rgba(245,166,35,0.08) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 20%, rgba(232,72,85,0.06) 0%, transparent 40%);
+}
+.hero-content {
+  max-width: 1100px; margin: 0 auto;
+  padding: 4rem 1.5rem;
+  display: grid; grid-template-columns: 1fr;
+  gap: 3rem; align-items: center;
+  position: relative; z-index: 2;
+  width: 100%; text-align: center;
+}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--gold-bg); border: 1px solid rgba(245,166,35,0.3);
+  color: var(--gold-dark); padding: 6px 14px;
+  border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+  margin-bottom: 1.25rem;
+}
+.hero h1 { margin-bottom: 1.25rem; font-size: 3.5rem; }
+.hero h1 span { color: var(--gold-dark); }
+.hero p { font-size: 1.15rem; margin: 0 auto 2.5rem; max-width: 700px; line-height: 1.6; }
+.hero-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+.hero-cta-primary {
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  color: #fff; padding: 15px 32px;
+  border-radius: 50px; font-weight: 700;
+  font-size: 1rem; font-family: var(--font-body);
+  cursor: pointer; border: none; transition: var(--transition);
+  display: inline-flex; align-items: center; gap: 8px;
+  text-decoration: none; box-shadow: var(--shadow-gold);
+}
+.hero-cta-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(245,166,35,0.4); color: #fff; }
+
+.hero-cta-outline {
+  background: transparent; color: var(--text-primary);
+  padding: 15px 32px; border-radius: 50px;
+  font-weight: 600; font-size: 1rem;
+  font-family: var(--font-body); cursor: pointer;
+  border: 1.5px solid var(--border); transition: var(--transition);
+  display: inline-flex; align-items: center; gap: 8px;
+  text-decoration: none;
+}
+.hero-cta-outline:hover { border-color: var(--gold); color: var(--gold-dark); background: var(--gold-bg); }
+
+/* ── MODULES ───────────────────────────────────────────── */
+.modules-section {
+  padding: 6rem 1.5rem;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+}
+.section-header { text-align: center; margin-bottom: 4rem; }
+.section-header p { max-width: 600px; margin: 1rem auto 0; font-size: 1.05rem; color: var(--text-muted); }
+
+.module-card {
+  padding: 2.5rem; text-align: center;
+  border-radius: var(--radius-xl);
+  background: var(--bg-main);
+  border: 1px solid var(--border);
+  transition: var(--transition);
+  height: 100%;
+}
+.module-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
+
+.icon-wrapper {
+  width: 72px; height: 72px; margin: 0 auto 1.5rem;
+  border-radius: 20px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem;
+}
+.icon-lib { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+.icon-lab { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+.icon-inv { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+.icon-bus { background: rgba(245, 166, 35, 0.1); color: var(--gold-dark); }
+
+.module-card h3 { font-size: 1.25rem; margin-bottom: 1rem; }
+.module-card p { font-size: 0.95rem; color: var(--text-muted); line-height: 1.6; }
+
+/* ── STATS SECTION ──────────────────────────────────────── */
+.stats-section {
+  padding: 5rem 1.5rem;
+  background: linear-gradient(135deg, var(--text-primary) 0%, #1a1d2e 100%);
+  color: white; text-align: center;
+}
+.stats-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem;
+  max-width: 1000px; margin: 0 auto;
+}
+.stat-box { padding: 1.5rem; }
+.stat-num { font-size: 3rem; font-family: var(--font-heading); font-weight: 800; color: var(--gold); margin-bottom: 0.5rem; }
+.stat-label { font-size: 1rem; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 1px; }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .hero h1 { font-size: 2.5rem; }
+  .grid-2, .grid-4 { grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+  .hero-content { padding: 3rem 1rem; }
+  .hero-btns { flex-direction: column; width: 100%; }
+  .grid-2, .grid-4 { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="hero-pattern"></div>
+  <div class="hero-content">
+    <div class="hero-header">
+      <div class="hero-badge">
+        <i class="fas fa-star"></i> All-In-One Unified Ecosystem
+      </div>
+      <h1>Next-Gen <span>School Management</span> Platform</h1>
+      <p>A unified, multi-tenant solution seamlessly integrating Library, Laboratories, Inventory, and Real-Time Bus Tracking into one powerful dashboard.</p>
+      <div class="hero-btns">
+        <a href="{% url 'accounts:login' %}" class="hero-cta-primary">
+          <i class="fas fa-sign-in-alt"></i> Login to Dashboard
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ INTEGRATED MODULES ═══ -->
+<section class="modules-section">
+  <div style="max-width:1200px; margin:0 auto;">
+    <div class="section-header">
+      <h2>Four Powerful Modules. One Platform.</h2>
+      <p>Streamline every aspect of school operations with our deeply integrated, role-based architecture.</p>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
+      <!-- Library -->
+      <div class="module-card">
+        <div class="icon-wrapper icon-lib"><i class="fas fa-book-reader"></i></div>
+        <h3>Library Management</h3>
+        <p>Comprehensive cataloging, intelligent issue/return tracking, automated fine calculations, and dynamic barcode generation.</p>
+      </div>
+
+      <!-- Laboratory -->
+      <div class="module-card">
+        <div class="icon-wrapper icon-lab"><i class="fas fa-flask"></i></div>
+        <h3>Lab Management</h3>
+        <p>Complete control over equipment bookings, utilization tracking, condition monitoring, and damage logs for all school labs.</p>
+      </div>
+
+      <!-- Inventory -->
+      <div class="module-card">
+        <div class="icon-wrapper icon-inv"><i class="fas fa-boxes"></i></div>
+        <h3>Smart Inventory</h3>
+        <p>Centralized procurement, automated PO and GRN processing. Instantly flow received assets directly into Library and Lab modules.</p>
+      </div>
+
+      <!-- Bus Tracker -->
+      <div class="module-card">
+        <div class="icon-wrapper icon-bus"><i class="fas fa-bus-alt"></i></div>
+        <h3>BusTracker Pro</h3>
+        <p>Real-time fleet tracking, instant WhatsApp notifications for parents, and complete multi-tenant trip management natively integrated.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ STATS ═══ -->
+<section class="stats-section">
+  <div class="stats-grid">
+    <div class="stat-box">
+      <div class="stat-num">100%</div>
+      <div class="stat-label">Cloud Integrated</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">4</div>
+      <div class="stat-label">Core Modules</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">Zero</div>
+      <div class="stat-label">Data Silos</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">24/7</div>
+      <div class="stat-label">System Uptime</div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

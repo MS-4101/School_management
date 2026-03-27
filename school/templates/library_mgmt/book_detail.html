@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block title %}{{ book.title }} — LibLab{% endblock %}
+{% block page_title %}Book Details{% endblock %}
+
+{% block content %}
+<div class="detail-grid">
+    <div class="detail-sidebar">
+        {% if book.cover_image %}
+        <img src="{{ book.cover_image.url }}" alt="{{ book.title }}" class="book-cover">
+        {% else %}
+        <div class="book-cover" style="background:var(--bg-elevated);display:flex;align-items:center;justify-content:center;aspect-ratio:3/4;border-radius:var(--border-radius)">
+            <span class="material-icons-round" style="font-size:64px;color:var(--text-muted)">menu_book</span>
+        </div>
+        {% endif %}
+        <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+            {% if book.is_available %}
+            <a href="{% url 'library:issue_book' book.pk %}" class="btn btn-success" style="flex:1;justify-content:center"><span class="material-icons-round" style="font-size:18px">assignment</span> Issue</a>
+            {% endif %}
+            <a href="{% url 'library:book_edit' book.pk %}" class="btn btn-outline" style="flex:1;justify-content:center"><span class="material-icons-round" style="font-size:18px">edit</span> Edit</a>
+        </div>
+    </div>
+    <div>
+        <div class="card">
+            <div class="card-header"><h3>{{ book.title }}</h3></div>
+            <div class="card-body detail-info">
+                <dl>
+                    <dt>Author</dt><dd>{{ book.author }}</dd>
+                    <dt>ISBN</dt><dd>{{ book.isbn }}</dd>
+                    <dt>Category</dt><dd>{{ book.category|default:'-' }}</dd>
+                    <dt>Publisher</dt><dd>{{ book.publisher|default:'-' }}</dd>
+                    <dt>Published</dt><dd>{{ book.published_date|default:'-' }}</dd>
+                    <dt>Location</dt><dd>{{ book.location|default:'-' }}</dd>
+                    <dt>Total Copies</dt><dd>{{ book.total_copies }}</dd>
+                    <dt>Available</dt>
+                    <dd>
+                        {% if book.available_copies > 0 %}
+                        <span class="badge badge-approved">{{ book.available_copies }}</span>
+                        {% else %}
+                        <span class="badge badge-overdue">0</span>
+                        {% endif %}
+                    </dd>
+                </dl>
+                {% if book.description %}
+                <div style="margin-top:16px">
+                    <dt style="font-size:13px;color:var(--text-muted);font-weight:500;margin-bottom:4px">Description</dt>
+                    <p style="color:var(--text-secondary);font-size:14px">{{ book.description }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card" style="margin-top:24px">
+            <div class="card-header">
+                <h3 style="display:flex;align-items:center;gap:10px">
+                    <span class="material-icons-round text-primary">inventory_2</span> Unit Inventory
+                </h3>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Accession Number</th>
+                                <th>Status</th>
+                                <th>Condition</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for copy in copies %}
+                            <tr>
+                                <td class="fw-bold">{{ copy.accession_number }}</td>
+                                <td>
+                                    <span class="badge badge-{{ copy.status }} px-3">
+                                        {{ copy.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="small py-1 px-2 bg-light rounded" style="font-size: 11px; text-transform: uppercase; font-weight: 700;">
+                                        {{ copy.get_condition_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-2">
+                                        {% if copy.status == 'available' %}
+                                        <a href="{% url 'library:issue_book' book.pk %}" class="btn btn-success btn-sm">Issue</a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="py-4 text-center text-muted">No physical units registered.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {% if issues %}
+        <div class="card" style="margin-top:16px">
+            <div class="card-header"><h3>Recent Issues</h3></div>
+            <div class="card-body" style="padding:0">
+                <table class="data-table">
+                    <thead><tr><th>User</th><th>Issue Date</th><th>Due Date</th><th>Status</th><th>Action</th></tr></thead>
+                    <tbody>
+                    {% for issue in issues %}
+                    <tr>
+                        <td>{{ issue.user }}</td>
+                        <td>{{ issue.issue_date|date:"M d, Y" }}</td>
+                        <td>{{ issue.due_date|date:"M d, Y" }}</td>
+                        <td><span class="badge badge-{{ issue.status }}">{{ issue.get_status_display }}</span></td>
+                        <td>{% if issue.status != 'returned' %}<a href="{% url 'library:return_book' issue.pk %}" class="btn btn-warning btn-sm">Return</a>{% else %}-{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard | School Management Platform{% endblock %}
+
+{% block content %}
+<div class="admin-container" style="max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem;">
+  
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
+    <div>
+      <h1 style="font-size: 1.8rem; font-family: var(--font-heading); margin-bottom: 0.25rem;">Unified Dashboard</h1>
+      <p style="color: var(--text-muted);">Overview of all integrated modules across the platform.</p>
+    </div>
+    <div style="font-size: 0.9rem; font-weight: 500; color: var(--gold-dark); background: var(--gold-bg); padding: 5px 12px; border-radius: 20px;">
+      <i class="fas fa-shield-alt"></i> {{ request.user.get_roles|join:", "|default:"User" }} Access
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+    
+    <!-- Library Widget -->
+    {% if user_section_access.library and user_section_access.library != 'none' %}
+    <div class="card" style="border-top: 4px solid #3b82f6;">
+      <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+        <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(59,130,246,0.1); color: #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+          <i class="fas fa-book-reader"></i>
+        </div>
+        <div><h3 style="font-size: 1.1rem; margin: 0;">Library Hub</h3></div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Total Books</div>
+          <div style="font-size: 1.5rem; font-weight: 700;">{{ total_books|default:"0" }}</div>
+        </div>
+        <div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Issued</div>
+          <div style="font-size: 1.5rem; font-weight: 700; color: #3b82f6;">{{ books_issued|default:"0" }}</div>
+        </div>
+        <div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Overdue</div>
+          <div style="font-size: 1.5rem; font-weight: 700; color: var(--danger);">{{ books_overdue|default:"0" }}</div>
+        </div>
+        <div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Copies</div>
+          <div style="font-size: 1.5rem; font-weight: 700;">{{ total_book_copies|default:"0" }}</div>
+        </div>
+      </div>
+      <div style="margin-top: 1.5rem; text-align: right;">
+        <a href="{% url 'library:book_list' %}" class="btn btn-outline btn-sm">Manage Library &rarr;</a>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Lab Widget -->
+    {% if user_section_access.lab and user_section_access.lab != 'none' %}
+    <div class="card" style="border-top: 4px solid #10b981;">
+      <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+        <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(16,185,129,0.1); color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+          <i class="fas fa-flask"></i>
+        </div>
+        <div><h3 style="font-size: 1.1rem; margin: 0;">Laboratories</h3></div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Active Labs</div>
+          <div style="font-size: 1.5rem; font-weight: 700;">{{ total_labs|default:"0" }}</div>
+        </div>
+        <div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Equipment</div>
+          <div style="font-size: 1.5rem; font-weight: 700;">{{ total_equipment|default:"0" }}</div>
+        </div>
+        <div style="grid-column: span 2;">
+          <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Pending Bookings</div>
+          <div style="font-size: 1.5rem; font-weight: 700; color: #f59e0b;">{{ pending_bookings|default:"0" }}</div>
+        </div>
+      </div>
+      <div style="margin-top: 1.5rem; text-align: right;">
+        <a href="{% url 'lab:equipment_list' %}" class="btn btn-outline btn-sm">Manage Labs &rarr;</a>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Inventory Widget -->
+    {% if user_section_access.inventory and user_section_access.inventory != 'none' %}
+    <div class="card" style="border-top: 4px solid #8b5cf6;">
+      <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+        <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(139,92,246,0.1); color: #8b5cf6; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+          <i class="fas fa-boxes"></i>
+        </div>
+        <div><h3 style="font-size: 1.1rem; margin: 0;">Inventory control</h3></div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Items Catalog</div>
+          <div style="font-size: 1.5rem; font-weight: 700;">{{ total_commodities|default:"0" }}</div>
+        </div>
+        <div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Low Stock</div>
+          <div style="font-size: 1.5rem; font-weight: 700; color: var(--danger);">{{ low_stock|default:"0" }}</div>
+        </div>
+      </div>
+      <div style="margin-top: 2.25rem; text-align: right;">
+        <a href="{% url 'inventory:dashboard' %}" class="btn btn-outline btn-sm">Inventory Dashboard &rarr;</a>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Bus Tracker Widget -->
+    {% if user_section_access.bus and user_section_access.bus != 'none' %}
+    <div class="card" style="border-top: 4px solid var(--gold);">
+      <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+        <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--gold-bg); color: var(--gold-dark); display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+          <i class="fas fa-bus-alt"></i>
+        </div>
+        <div><h3 style="font-size: 1.1rem; margin: 0;">School Buses</h3></div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Fleet Size</div>
+          <div style="font-size: 1.5rem; font-weight: 700;">{{ total_buses|default:"0" }}</div>
+        </div>
+        <div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Students</div>
+          <div style="font-size: 1.5rem; font-weight: 700;">{{ total_students_bus|default:"0" }}</div>
+        </div>
+        <div style="grid-column: span 2;">
+          <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Trips Today</div>
+          <div style="font-size: 1.5rem; font-weight: 700; color: var(--gold-dark);">{{ trips_today|default:"0" }}</div>
+        </div>
+      </div>
+      <div style="margin-top: 1.5rem; text-align: right;">
+        <a href="{% url 'dashboard:school_dashboard' %}" class="btn btn-outline btn-sm">Bus Dashboard &rarr;</a>
+      </div>
+    </div>
+    {% endif %}
+    
+    <!-- Access Control Widget -->
+    {% if user_section_access.access_control and user_section_access.access_control != 'none' %}
+    <div class="card" style="border-top: 4px solid var(--coral);">
+      <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+        <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(232,72,85,0.1); color: var(--coral); display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+          <i class="fas fa-user-shield"></i>
+        </div>
+        <div><h3 style="font-size: 1.1rem; margin: 0;">Access Control</h3></div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Total Users</div>
+          <div style="font-size: 1.5rem; font-weight: 700;">{{ total_users|default:"0" }}</div>
+        </div>
+        <div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Schools</div>
+          <div style="font-size: 1.5rem; font-weight: 700; color: var(--coral);">{{ request.school.name|default:"Configured" }}</div>
+        </div>
+      </div>
+      <div style="margin-top: 2.25rem; text-align: right;">
+        <a href="{% url 'accounts:access_control' %}" class="btn btn-outline btn-sm">Manage Access &rarr;</a>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

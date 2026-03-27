@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Issue Book — LibLab{% endblock %}
+{% block page_title %}Issue: {{ book.title }}{% endblock %}
+
+{% block content %}
+<div style="max-width:600px" class="animate-fade-up">
+    <div class="card-10-10">
+        <div class="card-header">
+            <h3><span class="material-icons-round text-primary" style="vertical-align:middle;margin-right:8px">assignment</span> Circulate Physical Copy</h3>
+        </div>
+        <div class="card-body">
+            <div class="p-4 mb-4" style="background: var(--bg-elevated); border-radius: 20px; border: 1px solid var(--border-color);">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <div class="icon-box-premium" style="background: white; color: var(--primary);">
+                            <span class="material-icons-round">menu_book</span>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="fw-black h5 mb-1">{{ book.title }}</div>
+                        <div class="text-muted small">By {{ book.author }} · <span class="text-success fw-bold">{{ book.available_copies }}</span> ready for issue</div>
+                    </div>
+                </div>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                {% for field in form %}
+                <div class="form-group mb-4">
+                    <label class="small fw-bold text-uppercase text-muted mb-2 d-block">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}<div class="text-muted" style="font-size: 11px; margin-top: 4px;">{{ field.help_text }}</div>{% endif %}
+                    {% if field.errors %}<div class="text-danger small mt-1" style="font-weight: 600;">{{ field.errors.0 }}</div>{% endif %}
+                </div>
+                {% endfor %}
+                <div class="d-flex gap-2 mt-4">
+                    <button type="submit" class="btn-premium-10-10 w-100 justify-content-center">
+                        Confirm Issue
+                    </button>
+                    <a href="{% url 'library:book_detail' book.pk %}" class="btn btn-outline" style="min-width: 120px; justify-content: center;">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

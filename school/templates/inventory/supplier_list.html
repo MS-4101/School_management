@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}Suppliers — LibLab{% endblock %}
+{% block page_title %}Suppliers{% endblock %}
+
+{% block content %}
+<div class="animate-fade-up">
+    <div class="section-header-10-10">
+        <h2><i class="material-icons-round">local_shipping</i> Supplier Network</h2>
+        <div class="toolbar-right">
+            <a href="{% url 'inventory:supplier_create' %}" class="btn-premium-10-10">
+                <span class="material-icons-round">person_add</span>
+                Add Supplier
+            </a>
+        </div>
+    </div>
+
+    <div class="card-10-10">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table-10-10 w-100">
+                    <thead>
+                        <tr>
+                            <th>Supplier Name</th>
+                            <th>Code</th>
+                            <th>Contact Person</th>
+                            <th>Email / Phone</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for supplier in suppliers %}
+                        <tr>
+                            <td class="fw-bold text-dark">{{ supplier.name }}</td>
+                            <td><span class="badge bg-light text-muted px-3 py-2" style="border-radius: 10px;">{{ supplier.vendor_code }}</span></td>
+                            <td>{{ supplier.contact_person }}</td>
+                            <td>
+                                <div class="small fw-medium">{{ supplier.email }}</div>
+                                <div class="small text-muted">{{ supplier.phone }}</div>
+                            </td>
+                            <td>
+                                <span class="badge {% if supplier.status == 'active' %}badge-approved{% elif supplier.status == 'inactive' %}badge-pending{% else %}badge-overdue{% endif %} px-3">
+                                    {{ supplier.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <a href="{% url 'inventory:supplier_update' supplier.pk %}" class="btn btn-outline btn-sm">
+                                        <span class="material-icons-round" style="font-size:16px">edit</span>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="py-5 text-center text-muted">
+                                <div class="empty-state">
+                                    <span class="material-icons-round" style="font-size: 48px; opacity: 0.3;">local_shipping</span>
+                                    <p class="mt-2">No suppliers found in the registry.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

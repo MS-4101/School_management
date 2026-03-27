@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Permissions — LibLab{% endblock %}
+{% block page_title %}Permission Management{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+    <div class="toolbar-left"><h3 style="font-size:15px;color:var(--text-secondary)">{{ permissions.count }} permission{{ permissions.count|pluralize }}</h3></div>
+    <div class="toolbar-right">
+        <a href="{% url 'accounts:permission_create' %}" class="btn-primary"><span class="material-icons-round" style="font-size:18px">add</span> Add Permission</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body" style="padding:0">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead><tr><th>Name</th><th>Codename</th><th>Description</th><th>Actions</th></tr></thead>
+                <tbody>
+                {% for perm in permissions %}
+                <tr>
+                    <td style="font-weight:500">{{ perm.name }}</td>
+                    <td><code style="background:var(--bg-elevated);padding:2px 8px;border-radius:4px;font-size:13px">{{ perm.codename }}</code></td>
+                    <td style="color:var(--text-secondary)">{{ perm.description|truncatechars:60|default:'-' }}</td>
+                    <td>
+                        <a href="{% url 'accounts:permission_delete' perm.pk %}" class="btn btn-danger btn-sm"><span class="material-icons-round" style="font-size:16px">delete</span></a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4"><div class="empty-state"><p>No permissions yet.</p><a href="{% url 'accounts:permission_create' %}" class="btn-primary btn-sm">Create First</a></div></td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

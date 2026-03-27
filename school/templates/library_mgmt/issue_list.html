@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Issues — LibLab{% endblock %}
+{% block page_title %}Book Issues{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+    <div class="toolbar-left">
+        <form method="get">
+            <select name="status" class="filter-select" onchange="this.form.submit()">
+                <option value="">All Statuses</option>
+                <option value="issued" {% if status_filter == 'issued' %}selected{% endif %}>Issued</option>
+                <option value="returned" {% if status_filter == 'returned' %}selected{% endif %}>Returned</option>
+                <option value="overdue" {% if status_filter == 'overdue' %}selected{% endif %}>Overdue</option>
+            </select>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body" style="padding:0">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead><tr><th>Book</th><th>User</th><th>Issued</th><th>Due Date</th><th>Returned</th><th>Status</th><th>Action</th></tr></thead>
+                <tbody>
+                {% for issue in issues %}
+                <tr>
+                    <td><a href="{% url 'library:book_detail' issue.book.pk %}" style="color:var(--text-primary);font-weight:500">{{ issue.book.title|truncatechars:30 }}</a></td>
+                    <td>{{ issue.user }}</td>
+                    <td>{{ issue.issue_date|date:"M d, Y" }}</td>
+                    <td>{{ issue.due_date|date:"M d, Y" }}</td>
+                    <td>{{ issue.return_date|date:"M d, Y"|default:'-' }}</td>
+                    <td><span class="badge badge-{{ issue.status }}">{{ issue.get_status_display }}</span></td>
+                    <td>
+                        {% if issue.status != 'returned' %}
+                        <a href="{% url 'library:return_book' issue.pk %}" class="btn btn-warning btn-sm">
+                            <span class="material-icons-round" style="font-size:16px">keyboard_return</span> Return
+                        </a>
+                        {% else %}-{% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7"><div class="empty-state"><p>No issues found.</p></div></td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

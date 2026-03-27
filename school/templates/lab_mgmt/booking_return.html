@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Return Equipment — LibLab{% endblock %}
+{% block page_title %}Return Equipment{% endblock %}
+
+{% block content %}
+<div class="confirm-card card">
+    <div class="card-body">
+        <div style="text-align:center">
+            <span class="material-icons-round" style="font-size:48px;color:var(--warning)">keyboard_return</span>
+            <h3 style="margin:12px 0 8px">Return Equipment</h3>
+            <p style="color:var(--text-secondary)"><strong>{{ booking.equipment.name }}</strong></p>
+            <p style="color:var(--text-muted);font-size:14px">Booked by: {{ booking.user }}</p>
+            <p style="color:var(--text-muted);font-size:14px">Qty: {{ booking.quantity_booked }} · {{ booking.start_date|date:"M d" }} – {{ booking.end_date|date:"M d, Y" }}</p>
+            <form method="post" class="confirm-actions" style="margin-top:20px">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-warning"><span class="material-icons-round" style="font-size:18px">check</span> Confirm Return</button>
+                <a href="{% url 'lab:booking_list' %}" class="btn btn-outline">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

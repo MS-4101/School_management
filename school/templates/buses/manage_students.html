@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block title %}Students - BusTrack Pro{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-container">
+    <div class="flex-between">
+      <div class="page-title">
+        <div class="page-title-icon"><i class="fas fa-users"></i></div>
+        Manage Students
+      </div>
+      <a href="{% url 'buses:add_student' %}" class="btn-primary">
+        <i class="fas fa-user-plus"></i> Add Student
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="content-container">
+
+  <!-- Search bar -->
+  <div style="max-width: 400px; margin-bottom: 1.5rem; position: relative;">
+    <i class="fas fa-search" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--white-30);"></i>
+    <input type="text" id="studentSearch" class="form-control" style="padding-left: 40px;" placeholder="Search by name, class, bus...">
+  </div>
+
+  {% if students %}
+  <div class="table-wrapper">
+    <table class="data-table" id="studentsTable">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Class</th>
+          <th>Bus</th>
+          <th>Pickup Location</th>
+          <th>Parent</th>
+          <th>WhatsApp</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for student in students %}
+        <tr>
+          <td>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--navy-light), var(--navy-border)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; color: var(--gold); flex-shrink: 0;">
+                {{ student.name|first|upper }}
+              </div>
+              <div>
+                <div style="font-weight: 600;">{{ student.name }}</div>
+                <div style="font-size: 0.75rem; color: var(--white-30);">Roll: {{ student.roll_number }}</div>
+              </div>
+            </div>
+          </td>
+          <td>{{ student.class_name }}{% if student.section %} - {{ student.section }}{% endif %}</td>
+          <td>
+            {% if student.bus %}
+              <span class="badge badge-gold">{{ student.bus.bus_name }}</span>
+            {% else %}
+              <span class="badge badge-gray">Unassigned</span>
+            {% endif %}
+          </td>
+          <td style="max-width: 200px; font-size: 0.82rem; color: var(--white-60);">
+            {% if student.route_stop %}
+                {{ student.route_stop.name }}
+            {% else %}
+                {{ student.address|truncatechars:50 }}
+            {% endif %}
+          </td>
+          <td style="font-size: 0.82rem;">{{ student.parent_name }}</td>
+          <td>
+            <span style="font-size: 0.8rem; color: #25D366;">
+              <i class="fab fa-whatsapp"></i> {{ student.parent_whatsapp }}
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="text-align: center; padding: 4rem 2rem;">
+    <i class="fas fa-users" style="font-size: 4rem; color: var(--white-30); margin-bottom: 1.5rem; display: block;"></i>
+    <h3>No students added yet</h3>
+    <a href="{% url 'buses:add_student' %}" class="btn-primary" style="margin-top: 1.5rem;">
+      <i class="fas fa-user-plus"></i> Add First Student
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('studentSearch').addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  document.querySelectorAll('#studentsTable tbody tr').forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Categories — LibLab{% endblock %}
+{% block page_title %}Book Categories{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+    <div class="toolbar-left"><h3 style="font-size:15px;color:var(--text-secondary)">{{ categories.count }} categor{{ categories.count|pluralize:"y,ies" }}</h3></div>
+    <div class="toolbar-right">
+        <a href="{% url 'library:category_create' %}" class="btn btn-primary"><span class="material-icons-round" style="font-size:18px">add</span> Add Category</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body" style="padding:0">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead><tr><th>Name</th><th>Description</th><th>Books</th><th>Actions</th></tr></thead>
+                <tbody>
+                {% for cat in categories %}
+                <tr>
+                    <td style="font-weight:500">{{ cat.name }}</td>
+                    <td style="color:var(--text-secondary)">{{ cat.description|truncatechars:60|default:'-' }}</td>
+                    <td>{{ cat.books.count }}</td>
+                    <td>
+                        <a href="{% url 'library:category_edit' cat.pk %}" class="btn btn-outline btn-sm"><span class="material-icons-round" style="font-size:16px">edit</span></a>
+                        <a href="{% url 'library:category_delete' cat.pk %}" class="btn btn-danger btn-sm"><span class="material-icons-round" style="font-size:16px">delete</span></a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4"><div class="empty-state"><p>No categories yet.</p><a href="{% url 'library:category_create' %}" class="btn-primary btn-sm">Create First</a></div></td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,449 @@
+{% extends 'base.html' %}
+{% load inventory_extras %}
+
+{% block extra_css %}
+<style>
+    .dashboard-10-10 {
+        padding: 40px;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
+    
+    .hero-glass-premium {
+        background: var(--grad-premium);
+        border-radius: 32px;
+        padding: 60px;
+        color: white;
+        margin-bottom: 48px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: var(--shadow-premium);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .hero-glass-premium::before {
+        content: '';
+        position: absolute;
+        top: -100px;
+        right: -100px;
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+
+    .hero-glass-premium h1 {
+        font-size: 42px;
+        font-weight: 900;
+        letter-spacing: -1.5px;
+        margin-bottom: 16px;
+        text-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        color: #ffffff !important;
+    }
+
+    .hero-glass-premium p {
+        font-size: 20px;
+        opacity: 0.9;
+        max-width: 700px;
+        line-height: 1.5;
+        color: #ffffff !important;
+    }
+
+    .metrics-grid-10-10 {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 32px;
+        margin-bottom: 56px;
+    }
+
+    .stat-card-10-10 {
+        background: white;
+        border-radius: 28px;
+        padding: 32px;
+        border: 1px solid rgba(255, 255, 255, 1);
+        box-shadow: var(--shadow-ultra);
+        transition: var(--transition-premium);
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        position: relative;
+    }
+
+    .stat-card-10-10:hover {
+        transform: translateY(-12px);
+        box-shadow: var(--shadow-premium);
+    }
+
+    .stat-icon-10-10 {
+        width: 60px;
+        height: 60px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+    }
+
+    .stat-meta-10-10 .label {
+        font-size: 13px;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        margin-bottom: 6px;
+    }
+
+    .stat-meta-10-10 .value {
+        font-size: 36px;
+        font-weight: 900;
+        color: #0f172a;
+        letter-spacing: -1px;
+    }
+
+    .progress-track-10-10 {
+        height: 10px;
+        background: #f1f5f9;
+        border-radius: 5px;
+        overflow: hidden;
+    }
+
+    .progress-fill-10-10 {
+        height: 100%;
+        border-radius: 5px;
+        transition: width 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .section-header-10-10 {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 32px;
+        padding-left: 8px;
+    }
+
+    .section-header-10-10 h2 {
+        font-size: 24px;
+        font-weight: 900;
+        color: #0f172a;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        letter-spacing: -0.5px;
+    }
+
+    .section-header-10-10 h2 i {
+        background: var(--grad-primary);
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .data-card-10-10 {
+        background: white;
+        border-radius: 32px;
+        border: 1px solid rgba(255, 255, 255, 1);
+        box-shadow: var(--shadow-ultra);
+        overflow: hidden;
+    }
+
+    .table-10-10 thead th {
+        background: #f8fafc;
+        padding: 20px 32px;
+        font-size: 13px;
+        font-weight: 800;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .table-10-10 tbody td {
+        padding: 24px 32px;
+        font-size: 15px;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+    }
+
+    .table-10-10 tbody tr:last-child td { border-bottom: none; }
+
+    .btn-premium-10-10 {
+        padding: 14px 28px;
+        border-radius: 18px;
+        font-weight: 800;
+        font-size: 16px;
+        transition: var(--transition-premium);
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        background: white;
+        color: var(--primary);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+        border: 1px solid rgba(0,0,0,0.02);
+    }
+
+    .btn-premium-10-10:hover {
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 20px 30px rgba(0,0,0,0.12);
+        background: var(--grad-primary);
+        color: white;
+    }
+
+    .feed-item:hover {
+        background: #f8fafc;
+    }
+
+    .card-10-10 {
+        background: white;
+        border-radius: 24px;
+        padding: 24px;
+        border: 1px solid rgba(0,0,0,0.05);
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition-premium);
+    }
+    
+    .card-10-10:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-4px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-10-10 animate-fade-up">
+    
+    <!-- Ultra Hero -->
+    <div class="hero-glass-premium animate-fade-in">
+        <div class="hero-text">
+            <h1 class="fw-black mb-3">Intelligence Command</h1>
+            <p class="mb-4">Unified oversight of library assets, laboratory resources, and metabolic inventory flow. Everything optimized, one dashboard.</p>
+        </div>
+        <div class="hero-actions mt-4 d-flex gap-3">
+            <a href="{% url 'inventory:transaction_create' %}" class="btn-premium-10-10">
+                <span class="material-icons-round">analytics</span>
+                <span>Live Transaction</span>
+            </a>
+            <a href="{% url 'inventory:commodity_list' %}" class="btn-premium-10-10" style="background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.4); box-shadow: none;">
+                <span class="material-icons-round">explore</span>
+                <span>Browse Vault</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Core Metrics -->
+    <div class="section-header-10-10">
+        <h2><i class="material-icons-round">grid_view</i> System Pulse</h2>
+    </div>
+
+    <div class="metrics-grid-10-10">
+        <!-- Metric 1 -->
+        <div class="stat-card-10-10">
+            <div class="stat-icon-10-10" style="background: rgba(79, 70, 229, 0.1); color: #4f46e5;">
+                <span class="material-icons-round">book</span>
+            </div>
+            <div class="stat-meta-10-10">
+                <div class="label">Physical Volumes</div>
+                <div class="value">{{ total_book_copies }}</div>
+            </div>
+            <div class="progress-track-10-10">
+                <div class="progress-fill-10-10" style="width: 100%; background: #4f46e5;"></div>
+            </div>
+        </div>
+
+        <!-- Metric 2 -->
+        <div class="stat-card-10-10">
+            <div class="stat-icon-10-10" style="background: rgba(14, 165, 233, 0.1); color: #0ea5e9;">
+                <span class="material-icons-round">sync_alt</span>
+            </div>
+            <div class="stat-meta-10-10">
+                <div class="label">Circulation</div>
+                <div class="value">{{ books_issued }}</div>
+            </div>
+            <div class="progress-track-10-10">
+                <div class="progress-fill-10-10 w-dynamic" style="--w: {{ issue_percentage|default:0 }}%; background: #0ea5e9;"></div>
+            </div>
+        </div>
+
+        <!-- Metric 3 -->
+        <div class="stat-card-10-10">
+            <div class="stat-icon-10-10" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+                <span class="material-icons-round">precision_manufacturing</span>
+            </div>
+            <div class="stat-meta-10-10">
+                <div class="label">Physical Units</div>
+                <div class="value">{{ total_lab_units }}</div>
+            </div>
+            <div class="progress-track-10-10">
+                <div class="progress-fill-10-10" style="width: 100%; background: #10b981;"></div>
+            </div>
+        </div>
+
+        <!-- Metric 4: Suppliers -->
+        <div class="stat-card-10-10">
+            <div class="stat-icon-10-10" style="background: rgba(99, 102, 241, 0.1); color: #6366f1;">
+                <span class="material-icons-round">local_shipping</span>
+            </div>
+            <div class="stat-meta-10-10">
+                <div class="label">Active Suppliers</div>
+                <div class="value">{{ total_suppliers }}</div>
+            </div>
+            <div class="progress-track-10-10">
+                <div class="progress-fill-10-10" style="width: 100%; background: #6366f1;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PO Value Hero (Small) -->
+    <div class="row mb-5">
+        <div class="col-md-6">
+            <div class="card-10-10 p-4 d-flex align-items-center justify-content-between" style="background: var(--grad-primary); color: white;">
+                <div>
+                    <div class="text-uppercase small fw-bold opacity-75">Total Procurement Value</div>
+                    <div class="h2 fw-black mb-0">₹{{ total_po_value }}</div>
+                </div>
+                <span class="material-icons-round" style="font-size: 48px; opacity: 0.2;">account_balance_wallet</span>
+            </div>
+        </div>
+        <div class="col-md-6">
+             <div class="card-10-10 p-4 d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="text-uppercase small fw-bold text-muted">Received Shipments</div>
+                    <div class="h2 fw-black mb-0 text-dark">{{ received_pos }}</div>
+                </div>
+                <span class="material-icons-round text-success" style="font-size: 48px; opacity: 0.15;">task_alt</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inventory Depth -->
+    <div class="row g-5">
+    <!-- Deep Insights Row 1: Procurement & Local Health -->
+    <div class="row g-5 mb-5">
+        <div class="col-xl-8">
+            <div class="section-header-10-10">
+                <h2><i class="material-icons-round">shopping_cart</i> Active Procurement</h2>
+                <a href="{% url 'inventory:po_list' %}" class="small text-primary fw-bold text-decoration-none">View All POs</a>
+            </div>
+            <div class="data-card-10-10">
+                <div class="table-responsive">
+                    <table class="table-10-10 w-100">
+                        <thead>
+                            <tr>
+                                <th>Order Ref</th>
+                                <th>Supplier</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for po in recent_pos %}
+                            <tr>
+                                <td><a href="{% url 'inventory:po_detail' po.pk %}" class="fw-black text-dark text-decoration-none">{{ po.po_number }}</a></td>
+                                <td>{{ po.supplier.name }}</td>
+                                <td class="fw-bold">₹{{ po.grand_total }}</td>
+                                <td><span class="badge badge-{{ po.status }}">{{ po.get_status_display }}</span></td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="py-5 text-center text-muted">No recent procurement activity.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            <div class="section-header-10-10">
+                <h2><i class="material-icons-round">handyman</i> Maintenance</h2>
+            </div>
+            <div class="data-card-10-10 p-4 {% if total_maintenance > 0 %}bg-maintenance-active{% else %}bg-maintenance-none{% endif %}">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="stat-icon-10-10" style="background: rgba(244, 63, 94, 0.1); color: #f43f5e; width: 48px; height: 48px; border-radius: 14px;">
+                        <span class="material-icons-round">report_problem</span>
+                    </div>
+                    <div>
+                        <div class="h3 fw-black mb-0">{{ total_maintenance }}</div>
+                        <div class="text-muted small fw-bold">Items OOO</div>
+                    </div>
+                </div>
+                <p class="text-muted small mb-0">
+                    {% if total_maintenance > 0 %}
+                    Critical attention required for {{ total_maintenance }} physical assets currently in maintenance workflow.
+                    {% else %}
+                    All hardware and library volumes are currently operational. System stability: 100%.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deep Insights Row 2: Stock & Telemetry -->
+    <div class="row g-5">
+        <div class="col-xl-8">
+            <div class="section-header-10-10">
+                <h2><i class="material-icons-round">warning_amber</i> Critical Oversight</h2>
+            </div>
+            <div class="data-card-10-10">
+                <div class="table-responsive">
+                    <table class="table-10-10 w-100">
+                        <thead>
+                            <tr>
+                                <th>Commodity</th>
+                                <th>Health</th>
+                                <th>Reserves</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in low_stock_items %}
+                            <tr>
+                                <td class="fw-bold text-dark">{{ item.name }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="progress-track-10-10" style="width: 100px;">
+                                            <div class="progress-fill-10-10 bg-danger w-dynamic" style="--w: {{ item.stock_progress|default:0 }}%"></div>
+                                        </div>
+                                        <span class="text-danger fw-bold small">{{ item.stock_progress|floatformat:0 }}%</span>
+                                    </div>
+                                </td>
+                                <td><span class="fw-black text-danger">{{ item.current_stock }} {{ item.unit }}</span></td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3" class="py-5 text-center text-muted">Awaiting stock alerts. System healthy.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            <div class="section-header-10-10">
+                <h2><i class="material-icons-round">history</i> Telemetry</h2>
+            </div>
+            <div class="data-card-10-10">
+                <div class="activity-feed">
+                    {% for tx in recent_transactions %}
+                    <div class="feed-item">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold text-dark">{{ tx.commodity.name }}</span>
+                            <span class="small text-muted">{{ tx.timestamp|timesince }} ago</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge {% if tx.quantity > 0 %}badge-returned{% else %}badge-overdue{% endif %} px-3">
+                                {{ tx.get_transaction_type_display }}
+                            </span>
+                            <span class="fw-black {% if tx.quantity > 0 %}text-success{% else %}text-danger{% endif %}" style="font-size: 18px;">
+                                {{ tx.quantity|stringformat:"+d" }}
+                            </span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="p-5 text-center text-muted">No telemetry data.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+</div>
+{% endblock %}

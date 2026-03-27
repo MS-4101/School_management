@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}Notification Logs - BusTrack Pro{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-container">
+    <div class="page-title">
+      <div class="page-title-icon"><i class="fas fa-bell"></i></div>
+      WhatsApp Notification Logs
+    </div>
+  </div>
+</div>
+
+<div class="content-container">
+  <div class="table-wrapper">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Type</th>
+          <th>Student</th>
+          <th>Recipient</th>
+          <th>WhatsApp</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr>
+          <td style="font-size: 0.78rem; color: var(--white-60);">{{ log.created_at|date:"d M, h:i A" }}</td>
+          <td>
+            <span class="badge badge-gray" style="font-size: 0.7rem;">{{ log.get_notification_type_display }}</span>
+          </td>
+          <td style="font-size: 0.82rem;">
+            {% if log.student %}{{ log.student.full_name }}{% else %}-{% endif %}
+          </td>
+          <td style="font-size: 0.82rem;">{{ log.recipient_name }}</td>
+          <td style="font-size: 0.8rem; color: #25D366;">
+            <i class="fab fa-whatsapp"></i> {{ log.recipient_phone }}
+          </td>
+          <td>
+            <span class="badge {% if log.status == 'sent' %}badge-green{% elif log.status == 'failed' %}badge-coral{% else %}badge-gold{% endif %}">
+              {% if log.status == 'sent' %}<i class="fas fa-check"></i>{% elif log.status == 'failed' %}<i class="fas fa-times"></i>{% else %}<i class="fas fa-clock"></i>{% endif %}
+              {{ log.status|capfirst }}
+            </span>
+            {% if log.error_message %}
+            <div style="font-size: 0.7rem; color: var(--coral); margin-top: 4px;">{{ log.error_message|truncatechars:50 }}</div>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--white-30);">No notifications yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

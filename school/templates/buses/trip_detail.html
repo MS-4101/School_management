@@ -1,0 +1,592 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Trip - {{ trip.bus.bus_name }} | BusTrack Pro{% endblock %}
+
+{% block extra_css %}
+<style>
+.trip-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+.progress-bar-container {
+  width: 200px;
+  height: 8px;
+  background: var(--bg-muted);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--grad-primary);
+  width: var(--progress, 0%);
+  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.t-stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem 1rem;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 110px;
+}
+
+.t-stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.t-stat-val {
+  font-family: var(--font-display);
+  font-size: 2.25rem;
+  font-weight: 900;
+  display: block;
+  margin-bottom: 2px;
+  line-height: 1;
+}
+
+.t-stat-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.t-stat-card.pending .t-stat-val { color: var(--text-secondary); }
+.t-stat-card.picked .t-stat-val { color: var(--green); }
+.t-stat-card.dropped .t-stat-val { color: var(--blue); }
+.t-stat-card.absent .t-stat-val { color: var(--coral); }
+
+/* Progress bar inside card */
+.card-progress {
+  height: 6px;
+  background: var(--bg-muted);
+  border-radius: 3px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+.card-progress-fill {
+  height: 100%;
+  background: var(--green);
+  transition: width 0.5s ease;
+}
+
+/* Filter Tabs */
+.filter-tabs {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.filter-tab {
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  white-space: nowrap;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-tab:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.filter-tab.active {
+  background: var(--grad-primary);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(245, 166, 35, 0.3);
+}
+
+.filter-tab .badge {
+  background: rgba(255,255,255,0.2);
+  color: inherit;
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+/* Search Bar Wrapper */
+.search-bar-wrapper {
+  position: relative;
+  margin: 0 auto 2.5rem;
+  max-width: 650px;
+  box-shadow: var(--shadow-sm);
+  border-radius: 30px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  transition: var(--transition);
+}
+
+.search-bar-wrapper:focus-within {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 4px rgba(245, 166, 35, 0.1);
+  transform: translateY(-2px);
+}
+
+.search-icon {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
+.search-input {
+  width: 100%;
+  height: 54px;
+  padding: 0 20px 0 55px;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 1rem;
+  font-family: var(--font-body);
+  color: var(--text-primary);
+}
+
+/* Student Grid & Card */
+.students-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.5rem;
+}
+
+.student-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  position: relative;
+  transition: var(--transition);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+}
+
+.student-card:hover {
+  border-color: var(--gold);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.student-status-bar {
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 6px;
+  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+}
+
+.s-avatar {
+  width: 52px;
+  height: 52px;
+  background: var(--gold-bg);
+  color: var(--gold);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.s-card-main {
+  display: flex; gap: 1.25rem; align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.s-info { flex: 1; min-width: 0; }
+.s-name { font-weight: 800; font-size: 1.1rem; color: var(--text-primary); margin-bottom: 4px; line-height: 1.2; }
+.s-meta { font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 6px; font-weight: 600; }
+.s-location { font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+.s-location i { color: var(--gold); font-size: 0.9rem; }
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.s-pending .student-status-bar { background: var(--border); }
+.s-picked .student-status-bar { background: var(--green); }
+.s-dropped .student-status-bar { background: var(--blue); }
+.s-absent .student-status-bar { background: var(--coral); }
+
+.s-time-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin-top: 8px;
+}
+
+.picked .s-time-badge { background: var(--green-bg); color: var(--green); }
+.dropped .s-time-badge { background: var(--blue-bg); color: var(--blue); }
+.absent .s-time-badge { background: var(--coral-bg); color: var(--coral); }
+
+.s-parent-info {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.78rem;
+}
+
+.s-action-area {
+  margin-top: 1.25rem;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn-card {
+  flex: 1;
+  padding: 10px;
+  border-radius: var(--radius-md);
+  font-size: 0.82rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+  transition: var(--transition);
+}
+
+.btn-pick { background: var(--green-bg); color: var(--green); border-color: rgba(22,163,74,0.2); }
+.btn-pick:hover { background: var(--green); color: #fff; }
+.btn-drop { background: var(--blue-bg); color: var(--blue); border-color: rgba(37,99,235,0.2); }
+.btn-drop:hover { background: var(--blue); color: #fff; }
+.btn-abs { background: var(--coral-bg); color: var(--coral); border-color: rgba(232,72,85,0.2); }
+.btn-abs:hover { background: var(--coral); color: #fff; }
+
+@media (max-width: 480px) {
+  .students-grid { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block navbar %}
+<nav class="navbar">
+  <div class="nav-container">
+    <a href="{% url 'buses:staff_dashboard' %}" class="nav-brand">
+      <div class="brand-icon"><i class="fas fa-bus"></i></div>
+      <span class="brand-text">BusTrack <span class="brand-pro">Pro</span></span>
+    </a>
+    <div class="nav-links">
+      <a href="{% url 'buses:staff_dashboard' %}" class="btn-outline-sm">
+        <i class="fas fa-arrow-left"></i> <span>Dashboard</span>
+      </a>
+      {% if trip.status != 'completed' %}
+      <form method="post" action="{% url 'buses:complete_trip' trip.id %}" onsubmit="return confirm('Complete this trip? Parents will be notified.')">
+        {% csrf_token %}
+        <button type="submit" class="btn-primary-sm" style="background: var(--grad-primary);">
+          <i class="fas fa-flag-checkered"></i> <span>Complete Trip</span>
+        </button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div class="page-header-container">
+    <div class="flex-between">
+      <div>
+        <h2 class="page-title">
+          <div class="page-title-icon"><i class="fas fa-route"></i></div>
+          {{ bus.bus_name }} &mdash; {{ trip.get_trip_type_display }}
+        </h2>
+        <div style="display: flex; gap: 12px; margin-top: 8px; flex-wrap: wrap;">
+          <span class="badge badge-gray"><i class="fas fa-calendar"></i> {{ trip.date|date:"d M Y" }}</span>
+          <span class="live-indicator">
+            <div class="live-dot"></div> {{ trip.get_status_display }}
+          </span>
+          {% if trip.started_at %}
+          <span class="badge badge-gold"><i class="fas fa-clock"></i> Started at {{ trip.started_at|time:"h:i A" }}</span>
+          {% endif %}
+        </div>
+      </div>
+      
+      <div style="text-align: right;">
+        <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px;">
+          Overall Progress: {{ picked_count }} / {{ total_count }}
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" style="--progress: {{ progress_percent }}%;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="content-container">
+
+  <!-- Trip Stats -->
+  <div class="trip-stats-grid">
+    <div class="t-stat-card pending">
+      <div class="t-stat-val">{{ pending_count }}</div>
+      <div class="t-stat-label">Pending</div>
+    </div>
+    <div class="t-stat-card picked">
+      <div class="t-stat-val">{{ picked_count }}</div>
+      <div class="t-stat-label">Picked</div>
+    </div>
+    <div class="t-stat-card dropped">
+      <div class="t-stat-val">{{ dropped_count }}</div>
+      <div class="t-stat-label">Dropped</div>
+    </div>
+    <div class="t-stat-card absent">
+      <div class="t-stat-val">{{ absent_count }}</div>
+      <div class="t-stat-label">Absent</div>
+    </div>
+  </div>
+
+  <div class="search-bar-wrapper">
+    <i class="fas fa-search search-icon"></i>
+    <input type="text" id="searchInput" class="search-input" placeholder="Search student by name or location...">
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-tabs">
+    <button class="filter-tab active" data-filter="all">All <span class="badge">{{ total_count }}</span></button>
+    <button class="filter-tab" data-filter="pending">Pending <span class="badge">{{ pending_count }}</span></button>
+    <button class="filter-tab" data-filter="picked">Picked <span class="badge">{{ picked_count }}</span></button>
+    <button class="filter-tab" data-filter="dropped">Dropped <span class="badge">{{ dropped_count }}</span></button>
+    <button class="filter-tab" data-filter="absent">Absent <span class="badge">{{ absent_count }}</span></button>
+  </div>
+
+  <!-- Grid -->
+  <div class="students-grid" id="studentsGrid">
+    {% for pickup in pickups %}
+    <div class="student-card s-{{ pickup.status }}" 
+         data-status="{{ pickup.status }}"
+         data-name="{{ pickup.student.name|lower }}"
+         data-location="{{ pickup.location_display|lower }}"
+         data-id="{{ pickup.id }}"
+         id="card-{{ pickup.id }}">
+      
+      <div class="student-status-bar"></div>
+
+      <div class="s-card-main">
+        <div class="s-avatar">
+          {{ pickup.student.name|first|upper }}
+        </div>
+        <div class="s-info">
+          <div class="s-name">{{ pickup.student.name }}</div>
+          <div class="s-meta">Class {{ pickup.student.class_name }} &nbsp;•&nbsp; Roll: {{ pickup.student.roll_number }}</div>
+          <div class="s-location">
+            <i class="fas fa-map-marker-alt"></i> 
+            {% if pickup.student.route_stop %}{{ pickup.student.route_stop.name }}{% else %}{{ pickup.student.address|truncatechars:35 }}{% endif %}
+          </div>
+          
+          <div style="margin-top: 8px;">
+            <span class="status-badge st-{{ pickup.status }}">{{ pickup.get_status_display }}</span>
+          </div>
+
+          {% if pickup.status == 'picked' %}
+          <div class="s-time-badge picked"><i class="fas fa-check-circle"></i> Picked at {{ pickup.pickup_time|time:"h:i A" }}</div>
+          {% elif pickup.status == 'dropped' %}
+          <div class="s-time-badge dropped"><i class="fas fa-home"></i> Dropped at {{ pickup.drop_time|time:"h:i A" }}</div>
+          {% elif pickup.status == 'absent' %}
+          <div class="s-time-badge absent"><i class="fas fa-times-circle"></i> Marked Absent</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="s-parent-info">
+        <span><i class="fas fa-user-friends"></i> {{ pickup.student.parent_name }}</span>
+        <a href="https://wa.me/{{ pickup.student.parent_whatsapp }}" target="_blank" style="color: #25D366; font-weight: 700;">
+          <i class="fab fa-whatsapp"></i> Chat
+        </a>
+      </div>
+
+      {% if trip.status == 'active' and pickup.status == 'pending' %}
+      <div class="s-action-area">
+        {% if trip.trip_type == 'morning' %}
+        <button class="btn btn-pick action-btn" data-action="picked">
+          <i class="fas fa-check"></i> Pickup
+        </button>
+        {% else %}
+        <button class="btn btn-drop action-btn" data-action="dropped">
+          <i class="fas fa-home"></i> Drop
+        </button>
+        {% endif %}
+        <button class="btn btn-abs action-btn" data-action="absent">
+          <i class="fas fa-times"></i> Absent
+        </button>
+      </div>
+      {% endif %}
+    </div>
+    {% empty %}
+    <div style="grid-column: 1/-1; text-align: center; padding: 4rem; background: var(--bg-card); border-radius: var(--radius-lg); border: 2px dashed var(--border);">
+      <div style="font-size: 3rem; color: var(--border); margin-bottom: 1rem;"><i class="fas fa-users-slash"></i></div>
+      <h4 style="color: var(--text-muted);">No students on this trip</h4>
+      <p style="font-size: 0.9rem;">Students assigned to this bus will appear here automatically.</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-backdrop" id="confirmModal">
+  <div class="modal-box">
+    <div class="modal-title" id="modalTitle">Confirm Action</div>
+    <p id="modalMessage" style="font-size: 0.92rem; color: var(--text-secondary); margin-bottom: 1.5rem;"></p>
+    
+    <div class="form-group" id="locationGroup">
+      <label class="form-label">Location Confirmation</label>
+      <input type="text" id="locationInput" class="form-control" placeholder="Enter location if different">
+    </div>
+
+    <div style="display: flex; gap: 10px; margin-top: 1.5rem;">
+      <button class="btn btn-outline" style="flex: 1;" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" style="flex: 1;" id="confirmBtn" onclick="submitAction()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const CSRF = '{{ csrf_token }}';
+let currentId = null;
+let currentAction = null;
+
+function markStudent(id, action) {
+  currentId = id;
+  currentAction = action;
+  
+  const card = document.getElementById('card-' + id);
+  const loc = card.getAttribute('data-location');
+  
+  const modal = document.getElementById('confirmModal');
+  const title = document.getElementById('modalTitle');
+  const msg = document.getElementById('modalMessage');
+  const btn = document.getElementById('confirmBtn');
+  const locInput = document.getElementById('locationInput');
+  const locGroup = document.getElementById('locationGroup');
+
+  if (action === 'picked') {
+    title.innerHTML = '<i class="fas fa-check-circle" style="color:var(--green)"></i> Confirm Pickup';
+    msg.textContent = 'Mark student as picked up? This will send an instant notification to parents.';
+    btn.className = 'btn btn-success';
+    locGroup.style.display = 'block';
+    locInput.value = loc;
+  } else if (action === 'dropped') {
+    title.innerHTML = '<i class="fas fa-home" style="color:var(--blue)"></i> Confirm Drop';
+    msg.textContent = 'Mark student as dropped home? This will send an instant notification to parents.';
+    btn.className = 'btn btn-primary';
+    locGroup.style.display = 'block';
+    locInput.value = loc;
+  } else {
+    title.innerHTML = '<i class="fas fa-times-circle" style="color:var(--coral)"></i> Mark Absent';
+    msg.textContent = 'Are you sure this student is absent today?';
+    btn.className = 'btn btn-danger';
+    locGroup.style.display = 'none';
+  }
+
+  modal.classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('confirmModal').classList.remove('open');
+}
+
+async function submitAction() {
+  if (!currentId || !currentAction) return;
+  const btn = document.getElementById('confirmBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+  const formData = new FormData();
+  formData.append('action', currentAction);
+  formData.append('location', document.getElementById('locationInput').value);
+  formData.append('csrfmiddlewaretoken', CSRF);
+
+  try {
+    const res = await fetch(`/buses/staff/pickup/${currentId}/mark/`, { method: 'POST', body: formData });
+    const data = await res.json();
+    if (data.success) {
+      location.reload(); // Simple reload to update counts and UI
+    } else {
+      alert(data.message || 'Error occurred');
+      btn.disabled = false;
+      btn.textContent = 'Confirm';
+    }
+  } catch (e) {
+    alert('Network error');
+    btn.disabled = false;
+    btn.textContent = 'Confirm';
+  }
+}
+
+// Search & Filter
+const searchInput = document.getElementById('searchInput');
+const filterTabs = document.querySelectorAll('.filter-tab');
+const cards = document.querySelectorAll('.student-card');
+
+function filter() {
+  const query = searchInput.value.toLowerCase();
+  const statusTab = document.querySelector('.filter-tab.active');
+  const status = statusTab ? statusTab.dataset.filter : 'all';
+  
+  cards.forEach(card => {
+    const mName = card.dataset.name.includes(query) || card.dataset.location.includes(query);
+    const mStatus = status === 'all' || card.dataset.status === status;
+    card.style.display = (mName && mStatus) ? 'block' : 'none';
+  });
+}
+
+searchInput.addEventListener('input', filter);
+filterTabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    filterTabs.forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    filter();
+  });
+});
+
+// Action Buttons
+document.querySelectorAll('.action-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const card = btn.closest('.student-card');
+    const id = card.dataset.id;
+    const action = btn.dataset.action;
+    markStudent(id, action);
+  });
+});
+</script>
+{% endblock %}

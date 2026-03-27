@@ -1,0 +1,291 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Trip Summary - {{ trip.get_trip_type_display }} | BusTrack Pro{% endblock %}
+
+{% block extra_css %}
+<style>
+.summary-container {
+    max-width: 900px;
+    margin: 2rem auto;
+    background: var(--bg-card);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+}
+
+.summary-header {
+    background: var(--bg-muted);
+    padding: 2.5rem;
+    border-bottom: 2px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.report-badge {
+    padding: 6px 16px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-bottom: 1px solid var(--border);
+}
+
+.sum-stat {
+    padding: 2rem 1rem;
+    text-align: center;
+    border-right: 1px solid var(--border);
+}
+.sum-stat:last-child { border-right: none; }
+
+.sum-val {
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    font-weight: 900;
+    display: block;
+    line-height: 1;
+    margin-bottom: 5px;
+}
+.sum-label {
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+}
+
+.picked-val { color: var(--green); }
+.dropped-val { color: var(--blue); }
+.absent-val { color: var(--coral); }
+.pending-val { color: var(--gold); }
+
+.details-section {
+    padding: 2.5rem;
+}
+
+.status-section {
+    margin-bottom: 2.5rem;
+}
+
+.section-title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.1rem;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.student-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.student-table th {
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    padding-bottom: 10px;
+}
+
+.student-table td {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 0.92rem;
+}
+
+.print-btn {
+    background: var(--text-primary);
+    color: #fff;
+    padding: 12px 25px;
+    border-radius: var(--radius-lg);
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.print-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+@media print {
+    .navbar, .btn-box, .print-btn { display: none !important; }
+    body { background: #fff !important; }
+    .summary-container { box-shadow: none; border: none; margin: 0; max-width: 100%; }
+}
+</style>
+{% endblock %}
+
+{% block navbar %}
+<nav class="navbar">
+  <div class="nav-container">
+    <a href="{% url 'buses:staff_dashboard' %}" class="nav-brand">
+      <div class="brand-icon"><i class="fas fa-bus"></i></div>
+      <span class="brand-text">BusTrack <span class="brand-pro">Pro</span></span>
+    </a>
+    <div class="nav-links">
+      <a href="{% url 'buses:staff_dashboard' %}" class="btn-outline-sm">
+        <i class="fas fa-arrow-left"></i> <span>Dashboard</span>
+      </a>
+    </div>
+  </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="content-container">
+    <div class="summary-container">
+        <div class="summary-header">
+            <div>
+                <div class="report-badge">SESSION REPORT</div>
+                <h1 style="margin-top: 10px; font-size: 1.75rem;">{{ trip.get_trip_type_display }} Summary</h1>
+                <div style="color: var(--text-muted); font-weight: 600; margin-top: 4px;">
+                    <i class="fas fa-calendar-alt"></i> {{ trip.date|date:"d M Y" }} &nbsp;•&nbsp; Trip ID: #{{ trip.id }}
+                </div>
+            </div>
+            <div class="btn-box">
+                <button onclick="window.print()" class="print-btn">
+                    <i class="fas fa-print"></i> Print Report
+                </button>
+            </div>
+        </div>
+
+        <div class="summary-grid">
+            <div class="sum-stat">
+                <span class="sum-val pending-val">{{ trip.total_students }}</span>
+                <span class="sum-label">Assigned</span>
+            </div>
+            <div class="sum-stat">
+                <span class="sum-val picked-val">{{ picked_list.count }}</span>
+                <span class="sum-label">Picked Up</span>
+            </div>
+            <div class="sum-stat">
+                <span class="sum-val dropped-val">{{ dropped_list.count }}</span>
+                <span class="sum-label">Dropped Off</span>
+            </div>
+            <div class="sum-stat">
+                <span class="sum-val absent-val">{{ absent_list.count }}</span>
+                <span class="sum-label">Absent</span>
+            </div>
+        </div>
+
+        <div class="details-section">
+            {% if picked_list %}
+            <div class="status-section">
+                <div class="section-title text-green">
+                    <i class="fas fa-check-circle"></i> Students Picked Up
+                </div>
+                <table class="student-table">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Time</th>
+                            <th>Location</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in picked_list %}
+                        <tr>
+                            <td><strong>{{ p.student.name }}</strong><br><small>Roll: {{ p.student.roll_number }}</small></td>
+                            <td>{{ p.pickup_time|time:"h:i A" }}</td>
+                            <td>{{ p.pickup_location }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            {% if dropped_list %}
+            <div class="status-section">
+                <div class="section-title text-blue">
+                    <i class="fas fa-home"></i> Students Dropped Off
+                </div>
+                <table class="student-table">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Time</th>
+                            <th>Location</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in dropped_list %}
+                        <tr>
+                            <td><strong>{{ p.student.name }}</strong><br><small>Roll: {{ p.student.roll_number }}</small></td>
+                            <td>{{ p.drop_time|time:"h:i A" }}</td>
+                            <td>{{ p.drop_location }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            {% if absent_list %}
+            <div class="status-section">
+                <div class="section-title text-coral">
+                    <i class="fas fa-times-circle"></i> Students Absent
+                </div>
+                <table class="student-table">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Class</th>
+                            <th>Reason/Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in absent_list %}
+                        <tr>
+                            <td><strong>{{ p.student.name }}</strong></td>
+                            <td>{{ p.student.class_name }}</td>
+                            <td>{{ p.notes|default:"--" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            {% if pending_list %}
+            <div class="status-section" style="opacity: 0.6;">
+                <div class="section-title text-gold">
+                    <i class="fas fa-exclamation-triangle"></i> Students Pending/Missed
+                </div>
+                <table class="student-table">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Info</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in pending_list %}
+                        <tr>
+                            <td><strong>{{ p.student.name }}</strong></td>
+                            <td>{{ p.student.class_name }} • {{ p.student.roll_number }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

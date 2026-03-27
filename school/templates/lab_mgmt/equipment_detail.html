@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% block title %}{{ equipment.name }} — LibLab{% endblock %}
+{% block page_title %}Equipment Details{% endblock %}
+
+{% block content %}
+<div class="animate-fade-up">
+    <div class="section-header-10-10">
+        <h2><i class="material-icons-round">precision_manufacturing</i> Asset Specification</h2>
+        <div class="toolbar-right gap-3">
+            <a href="{% url 'lab:equipment_list' %}" class="btn btn-outline">
+                <span class="material-icons-round">arrow_back</span>
+                Back to Inventory
+            </a>
+            <a href="{% url 'lab:booking_create' %}?equipment={{ equipment.pk }}" class="btn-primary">
+                <span class="material-icons-round">event</span>
+                Book Now
+            </a>
+            <a href="{% url 'lab:equipment_edit' equipment.pk %}" class="btn btn-outline">
+                <span class="material-icons-round">edit</span>
+                Edit
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Equipment Sidebar -->
+        <div class="col-lg-4">
+            <div class="card-10-10">
+                {% if equipment.image %}
+                <img src="{{ equipment.image.url }}" alt="{{ equipment.name }}" class="w-100" style="aspect-ratio: 1; object-fit: cover;">
+                {% else %}
+                <div class="w-100 bg-light d-flex align-items-center justify-content-center" style="aspect-ratio: 1;">
+                    <span class="material-icons-round text-muted" style="font-size: 80px;">precision_manufacturing</span>
+                </div>
+                {% endif %}
+                <div class="card-body">
+                    <div class="mb-4">
+                        <label class="text-muted small fw-bold text-uppercase block mb-1">Laboratory</label>
+                        <div class="fw-black text-primary">{{ equipment.lab.name }}</div>
+                        <div class="text-muted small">{{ equipment.lab.location }}</div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-6">
+                            <label class="text-muted small fw-bold text-uppercase block mb-1">Status</label>
+                            <div>
+                                <span class="badge badge-{{ equipment.status }} px-3">
+                                    {{ equipment.get_status_display }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <label class="text-muted small fw-bold text-uppercase block mb-1">Availability</label>
+                            <div class="fw-black">{{ equipment.available_quantity }} / {{ equipment.quantity }}</div>
+                        </div>
+                    </div>
+                    <div class="mb-0">
+                        <label class="text-muted small fw-bold text-uppercase block mb-1">Classification</label>
+                        <div class="small">
+                            {{ equipment.category.name }} 
+                            {% if equipment.sub_category %}
+                            <span class="text-muted">/ {{ equipment.sub_category.name }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Info -->
+        <div class="col-lg-8">
+            <div class="card-10-10 mb-4">
+                <div class="card-header">
+                    <h3>Technical Overview</h3>
+                </div>
+                <div class="card-body">
+                    <p class="text-secondary">{{ equipment.description|default:"No technical description provided for this asset." }}</p>
+                </div>
+            </div>
+
+            <!-- Unit Tracking Tab -->
+            <div class="card-10-10">
+                <div class="card-header">
+                    <h3 style="display:flex;align-items:center;gap:10px">
+                        <span class="material-icons-round text-primary">inventory_2</span> Unit Tracking (Asset Tags)
+                    </h3>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table-10-10 w-100">
+                            <thead>
+                                <tr>
+                                    <th>Asset ID / Serial</th>
+                                    <th>Status</th>
+                                    <th>Condition</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for unit in units %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-black">{{ unit.internal_uid }}</div>
+                                        <div class="text-muted small">{{ unit.serial_number|default:"No Serial Number" }}</div>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-{{ unit.status }} px-3">
+                                            {{ unit.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="small py-1 px-2 bg-light rounded" style="font-size: 11px; text-transform: uppercase; font-weight: 700;">
+                                            {{ unit.get_condition_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if unit.status == 'available' %}
+                                        <a href="{% url 'lab:booking_create' %}?equipment={{ equipment.pk }}&unit={{ unit.pk }}" class="btn btn-outline btn-sm">Book</a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="4" class="py-5 text-center text-muted">No physical units registered in the vault.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

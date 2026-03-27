@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block title %}Bus Tracker | School Management Platform{% endblock %}
+
+{% block content %}
+<div class="admin-container" style="max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem;">
+  
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
+    <div>
+      <h1 style="font-size: 1.8rem; font-family: var(--font-heading); margin-bottom: 0.25rem;">Transport Status</h1>
+      <p style="color: var(--text-muted);">Real-time tracking and trip analytics for {{ school.name|default:"School" }}</p>
+    </div>
+    <div>
+      <a href="{% url 'buses:manage_buses' %}" class="btn btn-outline"><i class="fas fa-bus"></i> Fleet</a>
+      <a href="{% url 'buses:manage_students' %}" class="btn btn-outline"><i class="fas fa-users"></i> Students</a>
+    </div>
+  </div>
+
+  <div class="grid-4" style="margin-bottom: 2rem;">
+    <div class="card" style="text-align: center;">
+      <div style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 0.5rem;">Total Fleet</div>
+      <div style="font-size: 2.5rem; font-weight: 800; color: var(--gold-dark);">{{ total_buses|default:"0" }}</div>
+      <div style="font-size: 0.8rem; color: var(--success);"><i class="fas fa-check-circle"></i> {{ active_buses|default:"0" }} Active</div>
+    </div>
+    <div class="card" style="text-align: center;">
+      <div style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 0.5rem;">Students Assigned</div>
+      <div style="font-size: 2.5rem; font-weight: 800; color: var(--text-primary);">{{ total_students|default:"0" }}</div>
+    </div>
+    <div class="card" style="text-align: center;">
+      <div style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 0.5rem;">Trips Today</div>
+      <div style="font-size: 2.5rem; font-weight: 800; color: var(--blue);">{{ trips_today|default:"0" }}</div>
+    </div>
+    <div class="card" style="text-align: center;">
+      <div style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 0.5rem;">Active Trips</div>
+      <div style="font-size: 2.5rem; font-weight: 800; color: var(--success);">{{ active_trips.count|default:"0" }}</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <!-- Active Trips -->
+    <div class="card">
+      <h3 style="margin-bottom: 1.5rem; font-size: 1.1rem; display: flex; align-items: center; justify-content: space-between;">
+        <span><i class="fas fa-route" style="color: var(--gold); margin-right: 8px;"></i> Currently Active Trips</span>
+      </h3>
+      {% if active_trips %}
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          {% for trip in active_trips %}
+          <div style="border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+              <span style="font-weight: 600;">{{ trip.bus.bus_name }} ({{ trip.bus.bus_number }})</span>
+              <span class="badge" style="background:var(--success-bg); color:var(--success);">{{ trip.get_trip_type_display }}</span>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.85rem; margin-bottom: 0.75rem; color: var(--text-muted);">
+              <div><i class="far fa-clock"></i> Started: {{ trip.started_at|date:"h:i A" }}</div>
+              <div><i class="fas fa-users"></i> Students: {{ trip.students_picked|add:trip.students_dropped }} / {{ trip.total_students }}</div>
+            </div>
+            <div style="width: 100%; background: var(--bg-muted); height: 6px; border-radius: 3px; overflow: hidden;">
+              {% widthratio trip.students_picked|add:trip.students_dropped trip.total_students|default:1 100 as progress %}
+              <div class="w-dynamic" style="--w: {{ progress|default:0 }}%; height: 100%; background: var(--success);"></div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div style="text-align: center; padding: 2rem 0; color: var(--text-muted);">
+          <i class="fas fa-bed" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+          <p>No active trips right now.</p>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Recent Alerts -->
+    <div class="card">
+      <h3 style="margin-bottom: 1.5rem; font-size: 1.1rem; display: flex; align-items: center; justify-content: space-between;">
+        <span><i class="fas fa-bell" style="color: var(--blue); margin-right: 8px;"></i> Recent Notifications</span>
+        <a href="{% url 'notifications:logs' %}" style="font-size: 0.85rem; font-weight: 500;">View All</a>
+      </h3>
+      <div style="display: flex; flex-direction: column; gap: 1rem;">
+        {% for log in recent_notifications %}
+        <div style="display: flex; gap: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
+          <div style="font-size: 1.5rem; color: var(--text-muted); margin-top: 4px;">
+            {% if log.notification_type == 'bus_departed' %}<i class="fas fa-bus-alt text-primary"></i>
+            {% elif log.notification_type == 'student_picked' %}<i class="fas fa-user-check text-success"></i>
+            {% elif log.notification_type == 'student_dropped' %}<i class="fas fa-home text-info"></i>
+            {% else %}<i class="fas fa-info-circle"></i>{% endif %}
+          </div>
+          <div style="flex: 1;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+              <span style="font-weight: 600; font-size: 0.9rem;">{{ log.recipient_name }}</span>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">{{ log.created_at|timesince }} ago</span>
+            </div>
+            <p style="font-size: 0.85rem; margin-bottom: 4px; color: var(--text-primary); white-space: pre-wrap;">{{ log.message|truncatewords:15 }}</p>
+            <div style="font-size: 0.75rem;">
+              <span class="badge {% if log.status == 'sent' %}badge-success{% else %}badge-warning{% endif %}" style="padding: 2px 6px;">{{ log.get_status_display }}</span>
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <p style="text-align: center; color: var(--text-muted); padding: 2rem 0;">No recent notifications.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}Equipment — LibLab{% endblock %}
+{% block page_title %}Equipment{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+    <div class="toolbar-left">
+        <form method="get" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <div class="search-box">
+                <span class="material-icons-round search-icon">search</span>
+                <input type="text" name="search" value="{{ search }}" placeholder="Search equipment...">
+            </div>
+            <select name="lab" class="filter-select" onchange="this.form.submit()">
+                <option value="">All Labs</option>
+                {% for lab in labs %}
+                <option value="{{ lab.pk }}" {% if selected_lab == lab.pk|stringformat:"d" %}selected{% endif %}>{{ lab.name }}</option>
+                {% endfor %}
+            </select>
+            <select name="category" class="filter-select" onchange="this.form.submit()">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                <option value="{{ cat.pk }}" {% if selected_category == cat.pk|stringformat:"d" %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+    <div class="toolbar-right">
+        <a href="{% url 'lab:equipment_create' %}" class="btn btn-primary"><span class="material-icons-round" style="font-size:18px">add</span> Add Equipment</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body" style="padding:0">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead><tr><th>Equipment</th><th>Lab</th><th>Category</th><th>Sub-Category</th><th>Qty</th><th>Available</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody>
+                {% for eq in equipment %}
+                <tr>
+                    <td>
+                        <a href="{% url 'lab:equipment_detail' eq.pk %}" class="fw-bold text-dark">
+                            {{ eq.name }}
+                        </a>
+                    </td>
+                    <td>{{ eq.lab.name }}</td>
+                    <td>{% if eq.category %}<span class="badge badge-available">{{ eq.category.name }}</span>{% else %}-{% endif %}</td>
+                    <td>{% if eq.sub_category %}<span class="badge" style="background:#e0f2fe;color:#0369a1">{{ eq.sub_category.name }}</span>{% else %}-{% endif %}</td>
+                    <td>{{ eq.quantity }}</td>
+                    <td>{{ eq.available_quantity }}</td>
+                    <td><span class="badge badge-{{ eq.status }}">{{ eq.get_status_display }}</span></td>
+                    <td style="white-space:nowrap">
+                        <a href="{% url 'lab:equipment_edit' eq.pk %}" class="btn btn-outline btn-sm"><span class="material-icons-round" style="font-size:16px">edit</span></a>
+                        <a href="{% url 'lab:equipment_delete' eq.pk %}" class="btn btn-danger btn-sm"><span class="material-icons-round" style="font-size:16px">delete</span></a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8"><div class="empty-state"><div class="empty-icon"><span class="material-icons-round">precision_manufacturing</span></div><p>No equipment found.</p><a href="{% url 'lab:equipment_create' %}" class="btn-primary btn-sm">Add Equipment</a></div></td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

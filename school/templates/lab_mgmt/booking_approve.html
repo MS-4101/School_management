@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Approve Booking — LibLab{% endblock %}
+{% block page_title %}Review Booking{% endblock %}
+
+{% block content %}
+<div style="max-width:540px;margin:0 auto">
+    <div class="card">
+        <div class="card-header"><h3><span class="material-icons-round" style="vertical-align:middle;font-size:20px;margin-right:6px">fact_check</span> Booking Request</h3></div>
+        <div class="card-body">
+            <div class="detail-info">
+                <dl>
+                    <dt>Equipment</dt><dd>{{ booking.equipment.name }}</dd>
+                    <dt>Lab</dt><dd>{{ booking.equipment.lab.name }}</dd>
+                    <dt>Requested By</dt><dd>{{ booking.user }}</dd>
+                    <dt>Quantity</dt><dd>{{ booking.quantity_booked }}</dd>
+                    <dt>Start</dt><dd>{{ booking.start_date|date:"M d, Y H:i" }}</dd>
+                    <dt>End</dt><dd>{{ booking.end_date|date:"M d, Y H:i" }}</dd>
+                    <dt>Purpose</dt><dd>{{ booking.purpose }}</dd>
+                </dl>
+            </div>
+
+            <div style="background:var(--bg-elevated);padding:10px 16px;border-radius:var(--border-radius-sm);margin:20px 0;font-size:13px;color:var(--text-secondary)">
+                Available: {{ booking.equipment.available_quantity }} / {{ booking.equipment.quantity }}
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                <div style="display:flex;gap:10px;flex-wrap:wrap">
+                    <button type="submit" name="action" value="approve" class="btn btn-success">
+                        <span class="material-icons-round" style="font-size:18px">check_circle</span> Approve
+                    </button>
+                    <button type="submit" name="action" value="reject" class="btn btn-danger">
+                        <span class="material-icons-round" style="font-size:18px">cancel</span> Reject
+                    </button>
+                    <a href="{% url 'lab:booking_list' %}" class="btn btn-outline">Back</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

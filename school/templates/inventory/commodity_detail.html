@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .detail-vault-10-10 {
+        padding: 40px;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
+
+    .detail-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .detail-hero-premium {
+        background: white;
+        border-radius: 40px;
+        padding: 56px;
+        box-shadow: var(--shadow-premium);
+        border: 1px solid rgba(255, 255, 255, 1);
+        display: grid;
+        grid-template-columns: 350px 1fr;
+        gap: 56px;
+        margin-bottom: 48px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .detail-hero-premium::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; width: 8px; height: 100%;
+        background: var(--grad-primary);
+    }
+
+    .image-vault-10-10 {
+        width: 350px;
+        height: 350px;
+        border-radius: 32px;
+        overflow: hidden;
+        box-shadow: var(--shadow-ultra);
+        border: 4px solid #f1f5f9;
+    }
+
+    .image-vault-10-10 img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .meta-content-10-10 {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .category-tag-10-10 {
+        font-size: 13px;
+        font-weight: 800;
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 16px;
+    }
+
+    .title-vault-10-10 {
+        font-size: 48px;
+        font-weight: 900;
+        color: #0f172a;
+        letter-spacing: -2px;
+        margin-bottom: 24px;
+        line-height: 1.1;
+    }
+
+    .desc-vault-10-10 {
+        font-size: 18px;
+        color: #64748b;
+        line-height: 1.6;
+        margin-bottom: 40px;
+    }
+
+    .stock-vitals-10-10 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+        background: #f8fafc;
+        padding: 32px;
+        border-radius: 24px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .vital-item-10-10 .label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #94a3b8;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .vital-item-10-10 .val {
+        font-size: 28px;
+        font-weight: 900;
+        color: #0f172a;
+    }
+
+    .vital-item-10-10 .sub {
+        font-size: 14px;
+        color: #64748b;
+        margin-top: 4px;
+    }
+
+    .transaction-card-10-10 {
+        background: white;
+        border-radius: 32px;
+        border: 1px solid rgba(255, 255, 255, 1);
+        box-shadow: var(--shadow-ultra);
+        overflow: hidden;
+    }
+
+    .card-header-10-10 {
+        padding: 32px 40px;
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .card-header-10-10 h3 {
+        font-size: 24px;
+        font-weight: 900;
+        letter-spacing: -0.5px;
+    }
+
+    .tx-row-10-10 {
+        padding: 24px 40px;
+        border-bottom: 1px solid #f8fafc;
+        display: grid;
+        grid-template-columns: 1fr 200px 150px;
+        align-items: center;
+    }
+
+    .tx-row-10-10:last-child { border-bottom: none; }
+
+    .tx-row-10-10:hover { background: #f8fafc; }
+
+    .btn-vault-action {
+        padding: 16px 32px;
+        border-radius: 20px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: var(--transition-premium);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="detail-vault-10-10 animate-fade-up">
+    <div class="detail-container">
+        
+        <!-- Breadcrumb & Actions -->
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <a href="{% url 'inventory:commodity_list' %}" class="btn btn-link text-decoration-none text-dark fw-bold d-flex align-items-center gap-2">
+                <span class="material-icons-round">arrow_back</span> Return to Vault
+            </a>
+            <div class="d-flex gap-3">
+                <a href="{% url 'inventory:commodity_update' commodity.pk %}" class="btn btn-vault-action btn-outline-primary" style="border-radius: 16px;">
+                    <span class="material-icons-round">edit</span> Edit Asset
+                </a>
+                <a href="{% url 'inventory:commodity_register_transaction' commodity.pk %}" class="btn btn-vault-action btn-primary" style="border-radius: 16px; background: var(--grad-primary); border: none;">
+                    <span class="material-icons-round">swap_vert</span> Stock Action
+                </a>
+            </div>
+        </div>
+
+        <!-- Asset Hero -->
+        <div class="detail-hero-premium">
+            <div class="image-vault-10-10">
+                {% if commodity.image %}
+                <img src="{{ commodity.image.url }}" alt="{{ commodity.name }}">
+                {% else %}
+                <div class="d-flex align-items-center justify-content-center h-100 bg-light">
+                    <span class="material-icons-round text-muted" style="font-size: 120px; opacity: 0.1;">inventory_2</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="meta-content-10-10">
+                <div class="category-tag-10-10">{{ commodity.category.name }}</div>
+                <h1 class="title-vault-10-10">{{ commodity.name }}</h1>
+                <p class="desc-vault-10-10">{{ commodity.description|default:"No deep intelligence data available for this strategic asset." }}</p>
+                
+                <div class="stock-vitals-10-10">
+                    <div class="vital-item-10-10">
+                        <div class="label">Net Availability</div>
+                        <div class="val {% if commodity.current_stock <= commodity.low_stock_threshold %}text-danger{% endif %}">{{ commodity.current_stock }}</div>
+                        <div class="sub">{{ commodity.unit }} in reserve</div>
+                    </div>
+                    <div class="vital-item-10-10">
+                        <div class="label">Origin Protocol</div>
+                        <div class="val" style="font-size: 18px; text-transform: uppercase; letter-spacing: 1px;">{{ commodity.source_type }}</div>
+                        <div class="sub">System Linked</div>
+                    </div>
+                    <div class="vital-item-10-10">
+                        <div class="label">Safety Threshold</div>
+                        <div class="val">{{ commodity.low_stock_threshold }}</div>
+                        <div class="sub">Minimum Required</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Telemetry Data -->
+        <div class="transaction-card-10-10">
+            <div class="card-header-10-10">
+                <h3>Asset Telemetry Logs</h3>
+                <span class="badge bg-light text-muted px-4 py-2" style="border-radius: 12px; font-weight: 700;">{{ transactions.count }} Total Signals</span>
+            </div>
+            <div class="tx-body">
+                {% for tx in transactions %}
+                <div class="tx-row-10-10">
+                    <div>
+                        <div class="fw-bold text-dark mb-1">Stock {{ tx.get_transaction_type_display }}</div>
+                        <div class="small text-muted d-flex align-items-center gap-2">
+                            <span class="material-icons-round" style="font-size: 14px;">schedule</span>
+                            {{ tx.timestamp|date:"M d, Y - H:i" }}
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <span class="badge {% if tx.quantity > 0 %}badge-returned{% else %}badge-overdue{% endif %} px-4 py-2" style="border-radius: 10px;">
+                            {{ tx.get_transaction_type_display }}
+                        </span>
+                    </div>
+                    <div class="text-end fw-black {% if tx.quantity > 0 %}text-success{% else %}text-danger{% endif %}" style="font-size: 20px;">
+                        {{ tx.quantity|stringformat:"+d" }}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="p-5 text-center text-muted">Awaiting initial telemetry data for this asset.</div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

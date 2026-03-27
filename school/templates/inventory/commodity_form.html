@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .form-vault-10-10 {
+        padding: 40px;
+        background: #f8fafc;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .form-container-10-10 {
+        width: 100%;
+        max-width: 800px;
+    }
+
+    .card-form-10-10 {
+        background: white;
+        border-radius: 40px;
+        padding: 56px;
+        box-shadow: var(--shadow-premium);
+        border: 1px solid rgba(255, 255, 255, 1);
+        position: relative;
+    }
+
+    .card-form-10-10::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 12px;
+        background: var(--grad-primary);
+        border-radius: 40px 40px 0 0;
+    }
+
+    .form-header-10-10 {
+        text-align: center;
+        margin-bottom: 48px;
+    }
+
+    .form-header-10-10 h2 {
+        font-size: 32px;
+        font-weight: 900;
+        letter-spacing: -1.5px;
+        color: #0f172a;
+    }
+
+    .form-header-10-10 p {
+        color: #64748b;
+        font-size: 16px;
+        margin-top: 12px;
+    }
+
+    .form-group-10-10 {
+        margin-bottom: 32px;
+    }
+
+    .form-label-10-10 {
+        font-size: 13px;
+        font-weight: 800;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        margin-bottom: 12px;
+        display: block;
+    }
+
+    .form-control-10-10 {
+        width: 100%;
+        padding: 16px 24px;
+        border-radius: 18px;
+        border: 1px solid #e2e8f0;
+        background: #f8fafc;
+        font-size: 16px;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+
+    .form-control-10-10:focus {
+        background: white;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 5px rgba(79, 70, 229, 0.1);
+        outline: none;
+    }
+
+    .btn-submit-10-10 {
+        width: 100%;
+        padding: 20px;
+        border-radius: 20px;
+        font-weight: 900;
+        font-size: 18px;
+        background: var(--grad-primary);
+        color: white;
+        border: none;
+        box-shadow: 0 10px 25px rgba(79, 70, 229, 0.3);
+        transition: var(--transition-premium);
+        margin-top: 24px;
+    }
+
+    .btn-submit-10-10:hover {
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 20px 35px rgba(79, 70, 229, 0.4);
+    }
+
+    .cancel-link-10-10 {
+        display: block;
+        text-align: center;
+        margin-top: 32px;
+        color: #94a3b8;
+        font-weight: 700;
+        text-decoration: none;
+        transition: color 0.3s;
+    }
+
+    .cancel-link-10-10:hover {
+        color: var(--danger);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-vault-10-10 animate-fade-up">
+    <div class="form-container-10-10">
+        <div class="card-form-10-10">
+            <div class="form-header-10-10">
+                <h2>Asset Intelligence Update</h2>
+                <p>Configure strategic parameters for system commodities.</p>
+            </div>
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                {% for field in form %}
+                <div class="form-group-10-10">
+                    <label class="form-label-10-10" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    <div class="input-wrapper">
+                        {% if field.field.widget.input_type == 'file' %}
+                            <div class="custom-file-upload">
+                                {{ field }}
+                            </div>
+                        {% else %}
+                            {{ field }}
+                        {% endif %}
+                    </div>
+                    {% if field.errors %}
+                    <div class="text-danger small mt-2 fw-bold">
+                        {{ field.errors|striptags }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+
+                <button type="submit" class="btn-submit-10-10">
+                    Synchronize Vault Data
+                </button>
+
+                <a href="{% url 'inventory:commodity_list' %}" class="cancel-link-10-10">
+                    Abort Operation
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Apply premium classes to Django form inputs
+    document.querySelectorAll('input, select, textarea').forEach(el => {
+        if (!el.classList.contains('btn')) {
+            el.classList.add('form-control-10-10');
+        }
+    });
+</script>
+{% endblock %}

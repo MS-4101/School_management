@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}Books — LibLab{% endblock %}
+{% block page_title %}Books{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+    <div class="toolbar-left">
+        <form method="get" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <div class="search-box">
+                <span class="material-icons-round search-icon">search</span>
+                <input type="text" name="search" value="{{ search }}" placeholder="Search books...">
+            </div>
+            <select name="category" class="filter-select" onchange="this.form.submit()" id="id_category_filter">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                <option value="{{ cat.pk }}" {% if selected_category == cat.pk|stringformat:"d" %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+            <select name="subcategory" class="filter-select" id="id_subcategory_filter" onchange="this.form.submit()">
+                <option value="">All Sub-Categories</option>
+                {% for sub in subcategories %}
+                <option value="{{ sub.pk }}" {% if selected_subcategory == sub.pk|stringformat:"d" %}selected{% endif %}>{{ sub.name }}</option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+    <div class="toolbar-right">
+        <a href="{% url 'library:book_create' %}" class="btn btn-primary"><span class="material-icons-round" style="font-size:18px">add</span> Add Book</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body" style="padding:0">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr><th>Title</th><th>Author</th><th>ISBN</th><th>Category</th><th>Sub-Category</th><th>Copies</th><th>Available</th><th>Actions</th></tr>
+                </thead>
+                <tbody>
+                {% for book in books %}
+                <tr>
+                    <td><a href="{% url 'library:book_detail' book.pk %}" style="font-weight:500;color:var(--text-primary)">{{ book.title|truncatechars:40 }}</a></td>
+                    <td style="color:var(--text-secondary)">{{ book.author }}</td>
+                    <td><code style="background:var(--bg-elevated);padding:2px 8px;border-radius:4px;font-size:12px">{{ book.isbn }}</code></td>
+                    <td>{% if book.category %}<span class="badge badge-available">{{ book.category.name }}</span>{% else %}-{% endif %}</td>
+                    <td>{% if book.sub_category %}<span class="badge" style="background:#e0f2fe;color:#0369a1">{{ book.sub_category.name }}</span>{% else %}-{% endif %}</td>
+                    <td>{{ book.total_copies }}</td>
+                    <td>
+                        {% if book.available_copies > 0 %}
+                        <span class="badge badge-approved">{{ book.available_copies }}</span>
+                        {% else %}
+                        <span class="badge badge-overdue">0</span>
+                        {% endif %}
+                    </td>
+                    <td style="white-space:nowrap">
+                        {% if book.is_available %}
+                        <a href="{% url 'library:issue_book' book.pk %}" class="btn btn-success btn-sm"><span class="material-icons-round" style="font-size:16px">assignment</span></a>
+                        {% endif %}
+                        <a href="{% url 'library:book_edit' book.pk %}" class="btn btn-outline btn-sm"><span class="material-icons-round" style="font-size:16px">edit</span></a>
+                        <a href="{% url 'library:book_delete' book.pk %}" class="btn btn-danger btn-sm"><span class="material-icons-round" style="font-size:16px">delete</span></a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8"><div class="empty-state"><div class="empty-icon"><span class="material-icons-round">menu_book</span></div><p>No books found</p><a href="{% url 'library:book_create' %}" class="btn-primary btn-sm">Add First Book</a></div></td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

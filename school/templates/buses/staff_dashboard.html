@@ -1,0 +1,330 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Staff Dashboard - {{ bus.bus_name }} | BusTrack Pro{% endblock %}
+
+{% block extra_css %}
+<style>
+.staff-header {
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  padding: 2.5rem 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.bus-identity {
+  display: flex; align-items: center; gap: 1.5rem;
+}
+
+.bus-badge-big {
+  width: 72px; height: 72px;
+  background: var(--grad-primary);
+  border-radius: var(--radius-lg);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem;
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 8px 16px rgba(245, 166, 35, 0.2);
+}
+
+.trip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.trip-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+}
+
+.trip-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--gold);
+}
+
+.trip-card-header {
+  padding: 1.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+
+.trip-type-icon {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.25rem;
+}
+
+.morning-icon { background: var(--gold-bg); color: var(--gold); }
+.afternoon-icon { background: var(--coral-bg); color: var(--coral); }
+
+.trip-card-body { 
+  padding: 1.5rem; 
+  flex: 1; 
+  display: flex; 
+  flex-direction: column; 
+  justify-content: center;
+}
+
+.trip-stats-mini {
+  display: flex;
+  gap: 15px;
+  margin: 1rem 0;
+  flex-wrap: wrap;
+}
+
+.t-mini-stat {
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.start-trip-btn {
+  width: 100%;
+  padding: 18px;
+  border-radius: var(--radius-lg);
+  font-size: 1.05rem;
+  font-weight: 800;
+  cursor: pointer;
+  border: none;
+  font-family: var(--font-display);
+  transition: var(--transition);
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.start-morning {
+  background: var(--grad-primary);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(245, 166, 35, 0.3);
+}
+
+.start-afternoon {
+  background: linear-gradient(135deg, var(--coral), #f43f5e);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(232, 72, 85, 0.3);
+}
+
+.status-completed {
+  background: var(--green-bg);
+  color: var(--green);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  text-align: center;
+  font-weight: 700;
+}
+
+@media (max-width: 500px) {
+  .trip-grid { grid-template-columns: 1fr; }
+  .staff-header { text-align: center; }
+  .bus-identity { flex-direction: column; }
+}
+
+@media (max-width: 500px) {
+  .trip-grid { grid-template-columns: 1fr; }
+  .staff-header { text-align: center; }
+  .bus-identity { flex-direction: column; }
+}
+</style>
+{% endblock %}
+
+{% block navbar %}
+<nav class="navbar">
+  <div class="nav-container">
+    <a href="{% url 'buses:staff_dashboard' %}" class="nav-brand">
+      <div class="brand-icon"><i class="fas fa-bus"></i></div>
+      <span class="brand-text">BusTrack <span class="brand-pro">Pro</span></span>
+    </a>
+    <div class="nav-links">
+      {% if morning_trip.status == 'completed' and afternoon_trip.status == 'completed' %}
+      <a href="{% url 'accounts:bus_logout' %}" class="btn-primary-sm" style="background: var(--gold); color: #1e293b;">
+        <i class="fas fa-check-circle"></i> <span>Finish Day</span>
+      </a>
+      {% endif %}
+      <span class="nav-link" style="color: var(--gold); font-weight: 700;">
+        <i class="fas fa-id-badge"></i> {{ bus.bus_name }}
+      </span>
+      <a href="{% url 'accounts:bus_logout' %}" class="btn-outline-sm">
+        <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+      </a>
+    </div>
+  </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+
+<div class="staff-header">
+  <div class="content-container" style="padding: 0;">
+    <div class="flex-between">
+      <div class="bus-identity">
+        <div class="bus-badge-big"><i class="fas fa-shuttle-van"></i></div>
+        <div>
+          <h1 style="font-size: 1.75rem; margin-bottom: 4px;">{{ bus.bus_name }}</h1>
+          <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+            <span class="badge badge-gray"><i class="fas fa-hashtag"></i> {{ bus.bus_number }}</span>
+            <span class="badge badge-gold"><i class="fas fa-school"></i> {{ bus.school.name }}</span>
+            <span class="badge badge-blue"><i class="fas fa-calendar-alt"></i> {{ today|date:"l, d M" }}</span>
+          </div>
+        </div>
+      </div>
+      <div style="text-align: right;" class="hidden-mobile">
+        <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Students Assigned</div>
+        <div style="font-size: 2.5rem; font-weight: 900; color: var(--text-primary); line-height: 1;">{{ total_students }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="content-container">
+
+  <div class="trip-grid">
+    <!-- MORNING TRIP -->
+    <div class="trip-card">
+      <div class="trip-card-header">
+        <div style="display: flex; align-items: center; gap: 15px;">
+          <div class="trip-type-icon morning-icon"><i class="fas fa-sun"></i></div>
+          <div>
+            <h3 style="margin: 0; font-size: 1.15rem;">Morning Trip</h3>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Home → School</span>
+          </div>
+        </div>
+        {% if morning_trip %}
+          <span class="badge {% if morning_trip.status == 'active' %}badge-green{% else %}badge-blue{% endif %}">
+            {{ morning_trip.get_status_display }}
+          </span>
+        {% else %}
+          <span class="badge badge-gray">Available</span>
+        {% endif %}
+      </div>
+
+      <div class="trip-card-body">
+        {% if morning_trip %}
+          <div class="trip-stats-mini">
+            <span class="t-mini-stat"><i class="fas fa-users"></i> {{ morning_trip.total_students }} Total</span>
+            <span class="t-mini-stat text-green"><i class="fas fa-check"></i> {{ morning_trip.students_picked }} Picked</span>
+            <span class="t-mini-stat text-coral"><i class="fas fa-times"></i> {{ morning_trip.students_absent }} Absent</span>
+          </div>
+
+          {% if morning_trip.status == 'active' %}
+            <a href="{% url 'buses:trip_detail' morning_trip.id %}" class="btn btn-primary" style="width: 100%; padding: 15px; margin-bottom: 10px;">
+              <i class="fas fa-play-circle"></i> Continue Marking
+            </a>
+          {% else %}
+            <div class="status-completed">
+              <i class="fas fa-check-double"></i> Morning Trip Completed
+              <div style="font-size: 0.75rem; font-weight: 500; margin-top: 4px; margin-bottom: 15px;">at {{ morning_trip.completed_at|time:"h:i A" }}</div>
+              <a href="{% url 'buses:trip_summary' morning_trip.id %}" class="btn-outline-sm" style="background: #fff; display: inline-flex;">
+                <i class="fas fa-file-invoice"></i> View Summary
+              </a>
+            </div>
+          {% endif %}
+        {% else %}
+          <p style="color: var(--text-secondary); font-size: 0.92rem; margin-bottom: 1.5rem;">
+            Ready to start the morning pickup? Parents will receive notifications when you depart.
+          </p>
+          <form method="post" action="{% url 'buses:start_trip' %}">
+            {% csrf_token %}
+            <input type="hidden" name="trip_type" value="morning">
+            <button type="submit" class="start-trip-btn start-morning">
+              <i class="fas fa-power-off"></i> Start Morning Trip
+            </button>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- AFTERNOON TRIP -->
+    <div class="trip-card">
+      <div class="trip-card-header">
+        <div style="display: flex; align-items: center; gap: 15px;">
+          <div class="trip-type-icon afternoon-icon"><i class="fas fa-cloud-sun"></i></div>
+          <div>
+            <h3 style="margin: 0; font-size: 1.15rem;">Afternoon Trip</h3>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">School → Home</span>
+          </div>
+        </div>
+        {% if afternoon_trip %}
+          <span class="badge {% if afternoon_trip.status == 'active' %}badge-green{% else %}badge-blue{% endif %}">
+            {{ afternoon_trip.get_status_display }}
+          </span>
+        {% else %}
+          <span class="badge badge-gray">Available</span>
+        {% endif %}
+      </div>
+
+      <div class="trip-card-body">
+        {% if afternoon_trip %}
+          <div class="trip-stats-mini">
+            <span class="t-mini-stat"><i class="fas fa-users"></i> {{ afternoon_trip.total_students }} Total</span>
+            <span class="t-mini-stat text-blue"><i class="fas fa-home"></i> {{ afternoon_trip.students_dropped }} Dropped</span>
+            <span class="t-mini-stat text-coral"><i class="fas fa-times"></i> {{ afternoon_trip.students_absent }} Absent</span>
+          </div>
+
+          {% if afternoon_trip.status == 'active' %}
+            <a href="{% url 'buses:trip_detail' afternoon_trip.id %}" class="btn btn-primary" style="width: 100%; padding: 15px; margin-bottom: 10px; background: #f43f5e; border-color: #f43f5e;">
+              <i class="fas fa-play-circle"></i> Continue Marking
+            </a>
+          {% else %}
+            <div class="status-completed" style="background: var(--blue-bg); color: var(--blue);">
+              <i class="fas fa-check-double"></i> Afternoon Trip Completed
+              <div style="font-size: 0.75rem; font-weight: 500; margin-top: 4px; margin-bottom: 15px;">at {{ afternoon_trip.completed_at|time:"h:i A" }}</div>
+              <a href="{% url 'buses:trip_summary' afternoon_trip.id %}" class="btn-outline-sm" style="background: #fff; display: inline-flex;">
+                <i class="fas fa-file-invoice"></i> View Summary
+              </a>
+            </div>
+          {% endif %}
+        {% else %}
+          <p style="color: var(--text-secondary); font-size: 0.92rem; margin-bottom: 1.5rem;">
+            Ready to start the afternoon drop-off? Ensure all students are safely onboard.
+          </p>
+          <form method="post" action="{% url 'buses:start_trip' %}">
+            {% csrf_token %}
+            <input type="hidden" name="trip_type" value="afternoon">
+            <button type="submit" class="start-trip-btn start-afternoon">
+              <i class="fas fa-power-off"></i> Start Afternoon Trip
+            </button>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Bus Staff -->
+  <div style="margin-top: 3rem;">
+    <h4 style="font-family: var(--font-display); font-weight: 800; margin-bottom: 1.25rem;">
+      <i class="fas fa-user-shield text-gold" style="margin-right: 10px;"></i> Onboarding Staff
+    </h4>
+    <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+      {% for staff in bus.staff.all %}
+      <div style="background: var(--bg-card); border: 1px solid var(--border); padding: 1.25rem; border-radius: var(--radius-lg); display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 280px; box-shadow: var(--shadow-sm);">
+        <div style="width: 46px; height: 46px; border-radius: 50%; background: var(--gold-bg); color: var(--gold); display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+          <i class="fas {% if staff.role == 'driver' %}fa-steering-wheel{% else %}fa-user-nurse{% endif %}"></i>
+        </div>
+        <div>
+          <div style="font-weight: 800; font-size: 1rem;">{{ staff.name }}</div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">
+            {{ staff.get_role_display }} &nbsp;•&nbsp; <i class="fas fa-phone"></i> {{ staff.phone }}
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div style="padding: 1rem; color: var(--text-muted); font-style: italic;">No staff records found for this bus.</div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

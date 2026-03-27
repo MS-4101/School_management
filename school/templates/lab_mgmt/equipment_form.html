@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} — LibLab{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div style="max-width:640px">
+    <div class="card">
+        <div class="card-header"><h3>{{ title }}</h3></div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}<small style="color:var(--text-muted);font-size:12px">{{ field.help_text }}</small>{% endif %}
+                    {% if field.errors %}<small style="color:var(--danger);font-size:12px">{{ field.errors.0 }}</small>{% endif %}
+                </div>
+                {% endfor %}
+                <div style="display:flex;gap:10px;margin-top:1.5rem">
+                    <button type="submit" class="btn-primary"><span class="material-icons-round" style="font-size:18px">save</span> Save</button>
+                    <a href="{% url 'lab:equipment_list' %}" class="btn btn-outline">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Dynamic sub-category loading based on equipment category selection
+    const categorySelect = document.getElementById('id_category');
+    const subCategorySelect = document.getElementById('id_sub_category');
+    if (categorySelect && subCategorySelect) {
+        categorySelect.addEventListener('change', function() {
+            const categoryId = this.value;
+            subCategorySelect.innerHTML = '<option value="">---------</option>';
+            if (categoryId) {
+                fetch(`{% url 'lab:ajax_eq_subcategories' %}?category_id=${categoryId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        data.forEach(sub => {
+                            const option = document.createElement('option');
+                            option.value = sub.id;
+                            option.textContent = sub.name;
+                            subCategorySelect.appendChild(option);
+                        });
+                    });
+            }
+        });
+    }
+</script>
+{% endblock %}

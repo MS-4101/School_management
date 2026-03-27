@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .form-vault-10-10 {
+        padding: 40px;
+        background: #f8fafc;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .form-container-10-10 {
+        width: 100%;
+        max-width: 850px;
+    }
+
+    .card-form-10-10 {
+        background: white;
+        border-radius: 48px;
+        padding: 64px;
+        box-shadow: var(--shadow-premium);
+        border: 1px solid rgba(255, 255, 255, 1);
+        position: relative;
+    }
+
+    .card-form-10-10::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 16px;
+        background: var(--grad-primary);
+        border-radius: 48px 48px 0 0;
+    }
+
+    .form-header-10-10 {
+        text-align: center;
+        margin-bottom: 56px;
+    }
+
+    .form-header-10-10 h2 {
+        font-size: 36px;
+        font-weight: 900;
+        letter-spacing: -1.5px;
+        color: #0f172a;
+    }
+
+    .form-header-10-10 p {
+        color: #64748b;
+        font-size: 18px;
+        margin-top: 16px;
+    }
+
+    .form-grid-10-10 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 32px;
+    }
+
+    .full-width { grid-column: span 2; }
+
+    .form-group-10-10 {
+        margin-bottom: 8px;
+    }
+
+    .form-label-10-10 {
+        font-size: 13px;
+        font-weight: 800;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 14px;
+        display: block;
+    }
+
+    .form-control-10-10 {
+        width: 100%;
+        padding: 18px 24px;
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
+        background: #f8fafc;
+        font-size: 16px;
+        font-weight: 600;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .form-control-10-10:focus {
+        background: white;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 6px rgba(79, 70, 229, 0.1);
+        outline: none;
+        transform: translateY(-2px);
+    }
+
+    .btn-submit-10-10 {
+        width: 100%;
+        padding: 22px;
+        border-radius: 24px;
+        font-weight: 900;
+        font-size: 20px;
+        background: var(--grad-primary);
+        color: white;
+        border: none;
+        box-shadow: 0 12px 30px rgba(79, 70, 229, 0.3);
+        transition: var(--transition-premium);
+        margin-top: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+    }
+
+    .btn-submit-10-10:hover {
+        transform: translateY(-6px) scale(1.02);
+        box-shadow: 0 25px 45px rgba(79, 70, 229, 0.4);
+    }
+
+    .cancel-link-10-10 {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 32px;
+        color: #94a3b8;
+        font-weight: 800;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+
+    .cancel-link-10-10:hover {
+        color: var(--danger);
+        transform: translateX(-4px);
+    }
+
+    /* File Input Styling */
+    .custom-file-10-10 {
+        position: relative;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-vault-10-10 animate-fade-up">
+    <div class="form-container-10-10">
+        <div class="card-form-10-10">
+            <div class="form-header-10-10">
+                <h2>Entity Configuration</h2>
+                <p>Establishing operational parameters for inventory intelligence.</p>
+            </div>
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="form-grid-10-10">
+                    {% for field in form %}
+                    <div class="form-group-10-10 {% if field.name == 'description' or field.name == 'notes' or field.field.widget.input_type == 'file' %}full-width{% endif %}">
+                        <label class="form-label-10-10" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                        <div class="form-text small mt-2 text-muted fw-semi-bold">
+                            {{ field.help_text|striptags }}
+                        </div>
+                        {% endif %}
+                        {% if field.errors %}
+                        <div class="text-danger small mt-2 fw-bold">
+                            {{ field.errors|striptags }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <button type="submit" class="btn-submit-10-10">
+                    <span class="material-icons-round">bolt</span>
+                    Deploy Configuration
+                </button>
+
+                <a href="javascript:history.back()" class="cancel-link-10-10">
+                    <span class="material-icons-round">undo</span>
+                    Abort & Return
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('input, select, textarea').forEach(el => {
+        if (!el.classList.contains('btn') && el.type !== 'checkbox') {
+            el.classList.add('form-control-10-10');
+        }
+    });
+</script>
+{% endblock %}

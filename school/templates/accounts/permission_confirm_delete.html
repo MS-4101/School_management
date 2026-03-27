@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}Delete Permission — LibLab{% endblock %}
+{% block page_title %}Delete Permission{% endblock %}
+
+{% block content %}
+<div class="confirm-card card">
+    <div class="card-body">
+        <div class="confirm-icon"><span class="material-icons-round" style="font-size:48px">warning</span></div>
+        <div class="confirm-text">
+            Are you sure you want to delete permission <span class="confirm-name">{{ permission.name }}</span>?
+        </div>
+        <form method="post" class="confirm-actions">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger"><span class="material-icons-round" style="font-size:18px">delete</span> Delete</button>
+            <a href="{% url 'accounts:permission_list' %}" class="btn btn-outline">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

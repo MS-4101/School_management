@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Equipment Categories — LibLab{% endblock %}
+{% block page_title %}Equipment Categories{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+    <div class="toolbar-left"><h3 style="font-size:15px;color:var(--text-secondary)">{{ categories|length }} categor{{ categories|length|pluralize:"y,ies" }}</h3></div>
+    <div class="toolbar-right">
+        <a href="{% url 'lab:eq_category_create' %}" class="btn btn-primary"><span class="material-icons-round" style="font-size:18px">add</span> Add Category</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body" style="padding:0">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead><tr><th>Name</th><th>Description</th><th>Sub-Categories</th><th>Equipment</th><th>Actions</th></tr></thead>
+                <tbody>
+                {% for cat in categories %}
+                <tr>
+                    <td style="font-weight:500">{{ cat.name }}</td>
+                    <td style="color:var(--text-secondary)">{{ cat.description|truncatechars:50|default:'-' }}</td>
+                    <td>{{ cat.subcategories.count }}</td>
+                    <td>{{ cat.equipment.count }}</td>
+                    <td>
+                        <a href="{% url 'lab:eq_category_edit' cat.pk %}" class="btn btn-outline btn-sm"><span class="material-icons-round" style="font-size:16px">edit</span></a>
+                        <a href="{% url 'lab:eq_category_delete' cat.pk %}" class="btn btn-danger btn-sm"><span class="material-icons-round" style="font-size:16px">delete</span></a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5"><div class="empty-state"><p>No equipment categories yet.</p><a href="{% url 'lab:eq_category_create' %}" class="btn-primary btn-sm">Create First</a></div></td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block title %}PO {{ po.po_number }} — LibLab{% endblock %}
+{% block page_title %}{{ po.po_number }}{% endblock %}
+
+{% block content %}
+<div class="animate-fade-up">
+    <div class="section-header-10-10">
+        <h2><i class="material-icons-round">receipt_long</i> Order Specification</h2>
+        <div class="toolbar-right gap-3">
+            <a href="{% url 'inventory:po_list' %}" class="btn btn-outline">
+                <span class="material-icons-round">arrow_back</span>
+                Back to Ledger
+            </a>
+            {% if po.status != 'received' and po.status != 'cancelled' %}
+            <form action="{% url 'inventory:po_receive' po.pk %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn-premium-10-10" style="background: var(--success); color: white;">
+                    <span class="material-icons-round">inventory</span>
+                    Confirm Receipt & Generate Units
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- PO Information -->
+        <div class="col-lg-4">
+            <div class="card-10-10 h-100">
+                <div class="card-header">
+                    <h3>General Intelligence</h3>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <label class="text-muted small fw-bold text-uppercase block mb-1">Supplier</label>
+                        <div class="fw-black" style="font-size: 18px;">{{ po.supplier.name }}</div>
+                        <div class="text-muted small">{{ po.supplier.vendor_code }}</div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-6">
+                            <label class="text-muted small fw-bold text-uppercase block mb-1">Status</label>
+                            <div>
+                                <span class="badge px-3 
+                                    {% if po.status == 'draft' %}bg-draft
+                                    {% elif po.status == 'ordered' %}bg-ordered
+                                    {% elif po.status == 'received' %}bg-received
+                                    {% else %}bg-danger-soft{% endif %}">
+                                    {{ po.get_status_display }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <label class="text-muted small fw-bold text-uppercase block mb-1">Order Date</label>
+                            <div class="fw-medium">{{ po.order_date|date:"M d, Y" }}</div>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="text-muted small fw-bold text-uppercase block mb-1">Financial Payload</label>
+                        <div class="fw-black text-primary" style="font-size: 24px;">₹{{ po.grand_total }}</div>
+                    </div>
+                    {% if po.notes %}
+                    <div>
+                        <label class="text-muted small fw-bold text-uppercase block mb-1">Notes</label>
+                        <p class="small">{{ po.notes }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Line Items -->
+        <div class="col-lg-8">
+            <div class="card-10-10">
+                <div class="card-header">
+                    <h3>Consolidated Items</h3>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table-10-10 w-100">
+                            <thead>
+                                <tr>
+                                    <th>Item Specification</th>
+                                    <th>Category</th>
+                                    <th>Quantity</th>
+                                    <th>Unit Price</th>
+                                    <th>Total (Inc. Tax)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in po.items.all %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold">{{ item.item_name }}</div>
+                                        <div class="text-muted small">
+                                            {% if item.linked_book %}
+                                                Linked to: 📚 {{ item.linked_book.title }}
+                                            {% elif item.linked_equipment %}
+                                                Linked to: 🔬 {{ item.linked_equipment.name }}
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>{{ item.get_item_category_display }}</td>
+                                    <td><span class="fw-black">{{ item.quantity }}</span> units</td>
+                                    <td>₹{{ item.unit_price }}</td>
+                                    <td class="fw-bold">₹{{ item.line_total }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

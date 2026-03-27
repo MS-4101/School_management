@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% block title %}Edit Bus - BusTrack Pro{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-container">
+    <div class="flex-between">
+      <div class="page-title">
+        <div class="page-title-icon"><i class="fas fa-edit"></i></div>
+        Edit Bus: {{ bus.bus_name }}
+      </div>
+      <a href="{% url 'buses:manage_buses' %}" class="btn btn-outline btn-sm">
+        <i class="fas fa-arrow-left"></i> Back
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="content-container" style="max-width: 700px;">
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="card" style="margin-bottom: 1.5rem;">
+      <h4 style="margin-bottom: 1.25rem; color: var(--gold);"><i class="fas fa-bus" style="margin-right: 8px;"></i> Bus Details</h4>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Bus Name *</label>
+          <input type="text" name="bus_name" class="form-control" value="{{ bus.bus_name }}" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Bus Number *</label>
+          <input type="text" name="bus_number" class="form-control" value="{{ bus.bus_number }}" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Capacity</label>
+          <input type="number" name="capacity" class="form-control" value="{{ bus.capacity }}" min="1" max="100">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select name="status" class="form-control">
+            {% for code, label in bus.STATUS_CHOICES %}
+            <option value="{{ code }}" {% if bus.status == code %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom: 1.5rem;">
+      <h4 style="margin-bottom: 0.5rem; color: var(--gold);"><i class="fas fa-key" style="margin-right: 8px;"></i> Bus Login Credentials</h4>
+      <p style="font-size: 0.85rem; color: var(--white-60); margin-bottom: 1.25rem;">Update the shared login for bus staff. Leave password blank to keep current.</p>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Bus Login ID *</label>
+          <input type="text" name="login_id" class="form-control" value="{{ bus.login_id }}" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Login Password (Optional)</label>
+          <input type="password" name="login_password" class="form-control" placeholder="Enter new password to change">
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom: 1.5rem;">
+      <h4 style="margin-bottom: 0.5rem; color: var(--gold);"><i class="fas fa-users" style="margin-right: 8px;"></i> Assign Staff (Max 2)</h4>
+      <p style="font-size: 0.85rem; color: var(--white-60); margin-bottom: 1.25rem;">Add up to 2 staff members (driver + attendant).</p>
+
+      <!-- Staff 1 -->
+      <div style="padding: 1rem; background: var(--white-05); border-radius: var(--radius-md); margin-bottom: 0.75rem; border: 1px solid var(--navy-border);">
+        <div style="font-size: 0.8rem; font-weight: 600; color: var(--gold); margin-bottom: 0.75rem;">Staff 1</div>
+        <div class="grid-2" style="gap: 0.75rem;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Name</label>
+            <input type="text" name="staff_name_1" class="form-control" placeholder="Full name" value="{{ staff_1.name|default:'' }}">
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Phone</label>
+            <input type="text" name="staff_phone_1" class="form-control" placeholder="+91XXXXXXXXXX" value="{{ staff_1.phone|default:'' }}">
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Role</label>
+            <select name="staff_role_1" class="form-control">
+              <option value="driver" {% if staff_1.role == 'driver' %}selected{% endif %}>Driver</option>
+              <option value="attendant" {% if staff_1.role == 'attendant' %}selected{% endif %}>Attendant</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Staff 2 -->
+      <div style="padding: 1rem; background: var(--white-05); border-radius: var(--radius-md); margin-bottom: 0.75rem; border: 1px solid var(--navy-border);">
+        <div style="font-size: 0.8rem; font-weight: 600; color: var(--gold); margin-bottom: 0.75rem;">Staff 2</div>
+        <div class="grid-2" style="gap: 0.75rem;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Name</label>
+            <input type="text" name="staff_name_2" class="form-control" placeholder="Full name" value="{{ staff_2.name|default:'' }}">
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Phone</label>
+            <input type="text" name="staff_phone_2" class="form-control" placeholder="+91XXXXXXXXXX" value="{{ staff_2.phone|default:'' }}">
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Role</label>
+            <select name="staff_role_2" class="form-control">
+              <option value="driver" {% if staff_2.role == 'driver' %}selected{% endif %}>Driver</option>
+              <option value="attendant" {% if staff_2.role == 'attendant' %}selected{% endif %}>Attendant</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 1rem;">
+      <button type="submit" class="btn-primary btn-lg">
+        <i class="fas fa-check"></i> Save Changes
+      </button>
+      <a href="{% url 'buses:manage_buses' %}" class="btn btn-outline btn-lg">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

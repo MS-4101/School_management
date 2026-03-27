@@ -1,0 +1,402 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Access Control | School Management Platform{% endblock %}
+
+{% block extra_css %}
+<style>
+.tab-header {
+  display: flex; gap: 1rem; margin-bottom: 2rem;
+  border-bottom: 2px solid var(--border-light);
+}
+.tab-btn {
+  padding: 1rem 1.5rem; background: none; border: none; font-size: 1rem;
+  font-weight: 600; color: var(--text-muted); cursor: pointer;
+  border-bottom: 3px solid transparent; margin-bottom: -2px;
+  transition: var(--transition);
+}
+.tab-btn:hover { color: var(--text-primary); }
+.tab-btn.active { color: var(--gold-dark); border-bottom-color: var(--gold); }
+
+.hidden { display: none !important; }
+
+.tab-content { display: none; animation: fadeIn 0.3s ease; }
+.tab-content.active { display: block; }
+@keyframes fadeIn { from{opacity:0; transform:translateY(5px)} to{opacity:1; transform:translateY(0)} }
+
+/* Role Permission Matrix Styling */
+.perm-matrix { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+.perm-matrix th { background: var(--bg-muted); padding: 12px; text-align: left; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+.perm-matrix td { padding: 12px; border-bottom: 1px solid var(--border-light); vertical-align: middle; }
+.perm-matrix tr:last-child td { border-bottom: none; }
+.perm-matrix tr:hover td { background: rgba(0,0,0,0.01); }
+
+.section-parent { font-weight: 700; background: rgba(212,175,55,0.05) !important; color: var(--gold-dark); }
+.section-child { padding-left: 3rem !important; }
+.section-icon { width: 24px; display: inline-block; text-align: center; margin-right: 8px; }
+
+/* Segmented Control for Toggles */
+.access-toggle {
+  display: inline-flex; background: var(--bg-muted); border-radius: var(--radius-md);
+  padding: 4px; border: 1px solid var(--border-light);
+}
+.access-btn {
+  padding: 6px 12px; border: none; background: transparent; font-size: 0.8rem; font-weight: 600;
+  color: var(--text-muted); cursor: pointer; border-radius: var(--radius-sm);
+  transition: all 0.2s;
+}
+.access-btn:hover { color: var(--text-primary); }
+.access-btn.active-none { background: #fff; color: var(--danger); box-shadow: var(--shadow-sm); }
+.access-btn.active-view { background: #fff; color: var(--info); box-shadow: var(--shadow-sm); }
+.access-btn.active-full { background: #fff; color: var(--success); box-shadow: var(--shadow-sm); }
+
+.role-selector { display: flex; align-items: center; gap: 1rem; background: var(--bg-card); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 2rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-container" style="max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem;">
+  
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem;">
+    <div>
+      <h1 style="font-size: 1.8rem; font-family: var(--font-heading); margin-bottom: 0.25rem;">Access Control Central</h1>
+      <p style="color: var(--text-muted);">Manage users, roles, system-wide module permissions, and school tenants.</p>
+    </div>
+  </div>
+
+  <div class="tab-header">
+    <button class="tab-btn {% if active_tab == 'user_creation' %}active{% endif %}" onclick="switchTab('user_creation', this)">
+      <i class="fas fa-user-plus"></i> User Creation
+    </button>
+    <button class="tab-btn {% if active_tab == 'role_permission' %}active{% endif %}" onclick="switchTab('role_permission', this)">
+      <i class="fas fa-user-shield"></i> Role Permissions
+    </button>
+    <button class="tab-btn {% if active_tab == 'school_creation' %}active{% endif %}" onclick="switchTab('school_creation', this)">
+      <i class="fas fa-building"></i> Tenant/School Config
+    </button>
+  </div>
+
+  <!-- Tab 1: User Creation -->
+  <div id="tab-user_creation" class="tab-content {% if active_tab == 'user_creation' %}active{% endif %}">
+    <div class="card">
+      <h3 style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-light); padding-bottom: 0.5rem;"><i class="fas fa-user-plus text-primary"></i> Register New User</h3>
+      <form method="post" action="{% url 'accounts:create_user' %}" class="grid-2">
+        {% csrf_token %}
+        <!-- Fields excluding roles -->
+        {% for field in user_form %}
+          {% if field.name != 'roles' %}
+            <div class="form-group">
+              <label class="form-label">{{ field.label }}</label>
+              {{ field }}
+              {% if field.errors %}<div class="text-danger" style="font-size:0.8rem; margin-top:4px;">{{ field.errors.0 }}</div>{% endif %}
+            </div>
+          {% endif %}
+        {% endfor %}
+        
+        <!-- Full width role assignment -->
+        <div class="form-group" style="grid-column: 1 / -1; margin-top: 1rem; background: var(--bg-muted); padding: 1.5rem; border-radius: var(--radius-md); border: 1px dashed var(--border);">
+          <label class="form-label" style="font-size: 1.1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; display: block; margin-bottom: 1rem;">
+            <i class="fas fa-tags text-primary"></i> Assign Access Roles
+          </label>
+          <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">Select one or more roles. The user's eventual access will be a combination of all selected roles.</div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+            {% for checkbox in user_form.roles %}
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; background: #fff; padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-light); font-weight: 500;">
+                {{ checkbox.tag }} {{ checkbox.choice_label }}
+              </label>
+            {% endfor %}
+          </div>
+        </div>
+        
+        <div style="grid-column: 1 / -1; margin-top: 1rem; text-align: right;">
+          <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Create User</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Tab 2: Role Permissions (Matrix) -->
+  <div id="tab-role_permission" class="tab-content {% if active_tab == 'role_permission' %}active{% endif %}">
+    
+    <div class="role-selector">
+      <div style="flex: 1;">
+        <h3 style="margin-bottom: 0.25rem;"><i class="fas fa-sliders-h text-primary"></i> Permission Matrix</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">Select a role below to configure its module access levels.</p>
+      </div>
+      <div style="flex: 1; max-width: 400px; display: flex; gap: 1rem;">
+        <form id="roleSelectForm" method="get" action="{% url 'accounts:access_control' %}" style="display: flex; width: 100%; gap: 10px;">
+          <input type="hidden" name="tab" value="role_permission">
+          <select name="role_id" class="form-control" onchange="document.getElementById('roleSelectForm').submit()" style="flex: 1;">
+            <option value="">-- Choose a Role to Edit --</option>
+            {% for r in roles %}
+              <option value="{{ r.id }}" {% if selected_role.id == r.id %}selected{% endif %}>{{ r.name }}</option>
+            {% endfor %}
+          </select>
+          <button type="button" onclick="toggleCreateRoleMode()" class="btn btn-outline" title="Create New Role"><i class="fas fa-plus"></i> New Role</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Create Role Form (Hidden by default) -->
+    <div id="createRoleFormWrap" class="card" style="display: none; margin-bottom: 2rem; border: 1px solid var(--gold); background: rgba(212,175,55,0.02);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3 style="margin: 0;"><i class="fas fa-plus-circle text-primary"></i> Create New Role</h3>
+        <button onclick="toggleCreateRoleMode()" class="btn btn-sm btn-outline"><i class="fas fa-times"></i> Cancel</button>
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Role Name</label>
+          <input type="text" id="newRoleName" class="form-control" placeholder="e.g. Senior Librarian">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <input type="text" id="newRoleDesc" class="form-control" placeholder="Brief role description">
+        </div>
+      </div>
+      <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 1rem;">
+        <i class="fas fa-info-circle"></i> Define the role details above, set the permissions in the matrix below, and then click <strong>"Create Role & Save Permissions"</strong>.
+      </div>
+    </div>
+
+    <div id="permMatrixWrap" class="card {% if not selected_role %}hidden{% endif %}" style="padding: 0; overflow: hidden;">
+      <div style="padding: 1.5rem; border-bottom: 1px solid var(--border); background: var(--bg-muted); display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h3 id="matrixTitle" style="margin: 0; display:flex; align-items:center; gap:10px;">
+            {% if selected_role %}
+              Editing Role: <span class="badge" style="background:var(--gold-bg); color:var(--gold-dark); font-size:1rem;">{{ selected_role.name }}</span>
+            {% else %}
+              Set Initial Permissions
+            {% endif %}
+          </h3>
+        </div>
+        <button id="saveBtn" onclick="savePermissions(this.dataset.roleId)" data-role-id="{{ selected_role.id|default:'' }}" class="btn btn-primary btn-sm">
+          <i class="fas fa-save"></i> <span id="saveBtnText">{% if selected_role %}Save Changes{% else %}Create Role & Save Permissions{% endif %}</span>
+        </button>
+      </div>
+
+      <div style="overflow-x: auto;">
+        <table class="perm-matrix" id="permTable">
+          <thead>
+            <tr>
+              <th>Module / Section</th>
+              <th style="width: 350px; text-align: center;">Access Level</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for parent in parent_sections %}
+              <!-- Parent Row -->
+              <tr class="section-parent">
+                <td>
+                  <i class="fas {{ parent.icon }} section-icon"></i> {{ parent.name }}
+                </td>
+                <td style="text-align: center;">
+                  <!-- Use template filter inside JS object mapping or basic dict get -->
+                  <div class="access-toggle" data-section-id="{{ parent.id }}">
+                    <button type="button" class="access-btn access-none" onclick="setAccess(this, 'none')">No Access</button>
+                    <button type="button" class="access-btn access-view" onclick="setAccess(this, 'view')">View Only</button>
+                    <button type="button" class="access-btn access-full" onclick="setAccess(this, 'full')">Full Access</button>
+                  </div>
+                </td>
+              </tr>
+              <!-- Child Rows -->
+              {% for child in parent.subsections.all %}
+              <tr>
+                <td class="section-child">
+                  <i class="fas {{ child.icon }} section-icon text-muted"></i> {{ child.name }}
+                </td>
+                <td style="text-align: center;">
+                  <div class="access-toggle" data-section-id="{{ child.id }}">
+                    <button type="button" class="access-btn access-none" onclick="setAccess(this, 'none')">No Access</button>
+                    <button type="button" class="access-btn access-view" onclick="setAccess(this, 'view')">View Only</button>
+                    <button type="button" class="access-btn access-full" onclick="setAccess(this, 'full')">Full Access</button>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      
+      <div style="padding: 1.5rem; background: var(--bg-muted); border-top: 1px solid var(--border); text-align: right;">
+        <button id="saveBtnBottom" onclick="savePermissions(this.dataset.roleId)" data-role-id="{{ selected_role.id|default:'' }}" class="btn btn-primary">
+          <i class="fas fa-save"></i> <span id="saveBtnTextBottom">{% if selected_role %}Save Changes{% else %}Create Role & Save Permissions{% endif %}</span>
+        </button>
+      </div>
+    </div>
+
+    {% if not selected_role %}
+    <div id="noRoleMsg" class="card" style="text-align: center; padding: 4rem 2rem;">
+      <i class="fas fa-hand-pointer" style="font-size: 3rem; color: var(--border); margin-bottom: 1rem;"></i>
+      <h3>Select a role to configure</h3>
+      <p style="color: var(--text-muted);">Use the dropdown above to select an existing role, or click <strong>"+ New Role"</strong> to create one with custom permissions.</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Tab 3: School (Tenant) Creation -->
+  <div id="tab-school_creation" class="tab-content {% if active_tab == 'school_creation' %}active{% endif %}">
+    <div class="card">
+      <h3 style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-light); padding-bottom: 0.5rem;"><i class="fas fa-building text-primary"></i> Register New School (Tenant)</h3>
+      <form method="post" action="{% url 'accounts:create_school' %}" enctype="multipart/form-data" class="grid-2">
+        {% csrf_token %}
+        {% for field in school_form %}
+          <div class="form-group">
+            <label class="form-label">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}<div class="text-danger" style="font-size:0.8rem; margin-top:4px;">{{ field.errors.0 }}</div>{% endif %}
+          </div>
+        {% endfor %}
+        <div style="grid-column: 1 / -1; margin-top: 1rem; text-align: right;">
+          <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Create Tenant</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- List existing tenants -->
+    <h3 style="margin: 2rem 0 1rem;"><i class="fas fa-list"></i> Existing Tenants</h3>
+    <div class="grid-3">
+      {% for sch in schools %}
+      <div class="card" style="padding: 1rem; display: flex; align-items: center; gap: 1rem;">
+        <div style="width: 50px; height: 50px; background: var(--bg-muted); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--text-muted); overflow: hidden;">
+          {% if sch.logo %}<img src="{{ sch.logo.url }}" style="width:100%; height:100%; object-fit:cover;">{% else %}<i class="fas fa-school"></i>{% endif %}
+        </div>
+        <div>
+          <h4 style="margin: 0; font-size: 1rem;">{{ sch.name }}</h4>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">{{ sch.city }}, {{ sch.state }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+
+<!-- Pass the JSON mapped permissions dictionary -> SectionID : AccessLevel -->
+{{ permission_map|json_script:"permData" }}
+
+<script>
+let isCreateMode = false;
+
+function toggleCreateRoleMode() {
+  isCreateMode = !isCreateMode;
+  const formWrap = document.getElementById('createRoleFormWrap');
+  const matrixWrap = document.getElementById('permMatrixWrap');
+  const noRoleMsg = document.getElementById('noRoleMsg');
+  const title = document.getElementById('matrixTitle');
+  const btns = [document.getElementById('saveBtnText'), document.getElementById('saveBtnTextBottom')];
+
+  if (isCreateMode) {
+    formWrap.style.display = 'block';
+    matrixWrap.classList.remove('hidden');
+    if(noRoleMsg) noRoleMsg.style.display = 'none';
+    title.innerHTML = '<i class="fas fa-magic text-primary"></i> Setting Initial Permissions';
+    btns.forEach(b => b.innerText = 'Create Role & Save Permissions');
+    
+    // Reset matrix toggles to 'none' for a fresh start
+    document.querySelectorAll('.access-toggle').forEach(container => {
+      const noneBtn = container.querySelector('.access-none');
+      if (noneBtn) setAccess(noneBtn, 'none');
+    });
+  } else {
+    // Reload to reset or just hide (full page reload is safer to restore selected_role context if any)
+    window.location.reload();
+  }
+}
+
+function switchTab(tabId, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + tabId).classList.add('active');
+  
+  // Update URL purely for visual refresh persist
+  const url = new URL(window.location);
+  url.searchParams.set('tab', tabId);
+  window.history.replaceState({}, '', url);
+}
+
+// Access Button Toggle Logic
+function setAccess(btn, level) {
+  const container = btn.closest('.access-toggle');
+  container.querySelectorAll('.access-btn').forEach(b => {
+    b.classList.remove('active-none', 'active-view', 'active-full');
+  });
+  btn.classList.add(`active-${level}`);
+  container.dataset.currentLevel = level;
+}
+
+// Initialization of matrix based on DB data
+document.addEventListener('DOMContentLoaded', () => {
+  const permDataScript = document.getElementById('permData');
+  if (permDataScript) {
+    const permMap = JSON.parse(permDataScript.textContent);
+    
+    document.querySelectorAll('.access-toggle').forEach(container => {
+      const secId = container.dataset.sectionId;
+      const level = permMap[secId] || 'none'; // default to none
+      const btn = container.querySelector(`.access-${level}`);
+      if (btn) setAccess(btn, level);
+    });
+  }
+});
+
+// Save logic
+function savePermissions(roleId) {
+  const url = isCreateMode ? "{% url 'accounts:create_role' %}" : "{% url 'accounts:save_role_permissions' %}";
+  
+  const payload = {
+    permissions: {}
+  };
+
+  if (isCreateMode) {
+    payload.name = document.getElementById('newRoleName').value.trim();
+    payload.description = document.getElementById('newRoleDesc').value.trim();
+    if (!payload.name) {
+      alert('Please enter a role name.');
+      return;
+    }
+  } else {
+    payload.role_id = roleId;
+    if (!payload.role_id) {
+      alert('No role selected.');
+      return;
+    }
+  }
+  
+  document.querySelectorAll('.access-toggle').forEach(container => {
+    const secId = container.dataset.sectionId;
+    const level = container.dataset.currentLevel || 'none';
+    payload.permissions[secId] = level;
+  });
+
+  fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': '{{ csrf_token }}'
+    },
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === 'ok') {
+      alert('Success: ' + data.message);
+      if (isCreateMode) {
+        // Redirect to edit the newly created role safely
+        const baseUrl = window.location.origin + window.location.pathname;
+        const params = new URLSearchParams();
+        params.set('tab', 'role_permission');
+        params.set('role_id', data.role_id);
+        window.location.href = baseUrl + '?' + params.toString();
+      }
+    } else {
+      alert('Error: ' + data.message);
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    alert('An unexpected error occurred while saving.');
+  });
+}
+</script>
+{% endblock %}

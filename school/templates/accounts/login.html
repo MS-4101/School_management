@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Login - School Management Platform{% endblock %}
+
+{% block extra_css %}
+<style>
+.login-wrapper {
+  min-height: 100vh; display: flex;
+  background: linear-gradient(135deg, #fffbf2 0%, #fff8e8 50%, #f5f6fa 100%);
+}
+.login-left {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  padding: 2rem 1.5rem;
+}
+.login-right {
+  flex: 1; background: linear-gradient(135deg, var(--gold-dark), #b8730f);
+  display: flex; align-items: center; justify-content: center;
+  padding: 3rem 2rem; position: relative; overflow: hidden;
+}
+.login-right::before {
+  content: ''; position: absolute; inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.login-right-content { position: relative; z-index: 2; color: #fff; max-width: 380px; }
+.login-right-content h2 { color: #fff; font-size: 1.75rem; margin-bottom: 1rem; }
+.login-right-content p { color: rgba(255,255,255,0.75); font-size: 0.9rem; margin-bottom: 2rem; }
+.feature-list { list-style: none; }
+.feature-list li {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.12);
+  font-size: 0.875rem; color: rgba(255,255,255,0.85);
+}
+.feature-list li:last-child { border-bottom: none; }
+.feature-list li i { width: 28px; height: 28px; background: rgba(255,255,255,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; flex-shrink: 0; }
+
+.login-container { width: 100%; max-width: 440px; }
+.login-logo-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 2rem; }
+.login-logo-icon {
+  width: 44px; height: 44px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  border-radius: var(--radius-md); display: flex; align-items: center;
+  justify-content: center; color: #fff; font-size: 1.1rem; font-weight: 800;
+  box-shadow: var(--shadow-gold);
+}
+.login-logo-text { font-family: var(--font-display); font-size: 1.2rem; font-weight: 800; color: var(--text-primary); }
+
+.login-heading { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.4rem; }
+.login-sub { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.75rem; }
+
+.login-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-xl); padding: 1.75rem;
+  box-shadow: var(--shadow-md);
+}
+
+.role-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--gold-bg); color: var(--gold-dark);
+  padding: 5px 12px; border-radius: 20px;
+  font-size: 0.78rem; font-weight: 600;
+  margin-bottom: 1.25rem;
+}
+
+.input-wrap { position: relative; }
+.input-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--text-placeholder); font-size: 0.85rem; pointer-events: none; }
+.input-padded { padding-left: 38px !important; }
+
+.login-back { text-align: center; margin-top: 1.25rem; font-size: 0.84rem; color: var(--text-muted); }
+
+@media (max-width: 768px) {
+  .login-right { display: none; }
+  .login-left { padding: 1.5rem 1rem; }
+  .login-container { max-width: 100%; }
+}
+
+.detect-pulse {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gold);
+  margin-right: 8px;
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(212,175,55,0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(212,175,55,0); }
+  100% { box-shadow: 0 0 0 0 rgba(212,175,55,0); }
+}
+
+/* Alert Classes */
+.alert-box { padding: 10px 14px; border-radius: var(--radius-md); margin-bottom: 1rem; font-size: 0.875rem; border: 1px solid transparent; }
+.alert-error { background: var(--coral-bg); color: var(--coral); border-color: rgba(232,72,85,0.3); }
+.alert-success { background: var(--green-bg); color: var(--green); border-color: rgba(22,163,74,0.3); }
+</style>
+{% endblock %}
+
+{% block full_page %}
+<div class="login-wrapper">
+
+  <!-- Left: Form -->
+  <div class="login-left">
+    <div class="login-container">
+
+      <div class="login-logo-wrap">
+        <div class="login-logo-icon"><i class="fas fa-school"></i></div>
+        <span class="login-logo-text">School Platform</span>
+      </div>
+
+      <h2 class="login-heading">Welcome back</h2>
+      <p class="login-sub">Sign in to access your customized workspace</p>
+
+      {% if messages %}
+      {% for message in messages %}
+      <div class="alert-box {% if 'error' in message.tags %}alert-error{% else %}alert-success{% endif %}">
+        <i class="fas {% if 'error' in message.tags %}fa-times-circle{% else %}fa-check-circle{% endif %}" style="margin-right:6px;"></i>{{ message }}
+      </div>
+      {% endfor %}
+      {% endif %}
+
+      <!-- Unified Login Form -->
+      <div class="login-card">
+        <div class="role-chip" style="display:flex; justify-content:space-between; width:100%;">
+          <span><i class="fas fa-shield-alt"></i> Unified Secure Login</span>
+        </div>
+        
+        <form method="post" action="{% url 'accounts:login' %}">
+          {% csrf_token %}
+          <div class="form-group">
+            <label class="form-label">Username / Bus ID</label>
+            <div class="input-wrap">
+              <i class="fas fa-user input-icon"></i>
+              <input type="text" name="username" class="form-control input-padded" placeholder="Enter your username or bus login ID" required autofocus>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <div class="input-wrap">
+              <i class="fas fa-lock input-icon"></i>
+              <input type="password" name="password" class="form-control input-padded" placeholder="Enter your password" required>
+            </div>
+          </div>
+          
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem; display: flex; align-items: center;">
+            <span class="detect-pulse"></span>
+            System will automatically detect your role and route you to the correct dashboard.
+          </div>
+
+          <button type="submit" class="btn btn-primary w-full" style="margin-top:0.5rem; height: 45px; font-weight: 600; font-size: 0.95rem;">
+            <i class="fas fa-sign-in-alt"></i> Secure Sign In
+          </button>
+        </form>
+      </div>
+
+      <div class="login-back">
+        <a href="{% url 'dashboard:landing' %}"><i class="fas fa-arrow-left"></i> Back to Home</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Right: Info panel -->
+  <div class="login-right">
+    <div class="login-right-content">
+      <h2>One Platform for Everything</h2>
+      <p>Seamlessly manage Library, Lab, Inventory, and School Transportation all in a single workspace tailored to your role.</p>
+      <ul class="feature-list">
+        <li><i class="fas fa-shield-alt"></i> Role-based dynamic access control</li>
+        <li><i class="fas fa-book"></i> Automated library inventory & issues</li>
+        <li><i class="fas fa-flask"></i> Complete lab equipment management</li>
+        <li><i class="fas fa-bus"></i> Live bus tracking & smart notifications</li>
+        <li><i class="fas fa-boxes"></i> Master inventory & purchase orders</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

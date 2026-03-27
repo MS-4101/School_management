@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Sub-Categories — LibLab{% endblock %}
+{% block page_title %}Book Sub-Categories{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+    <div class="toolbar-left"><h3 style="font-size:15px;color:var(--text-secondary)">{{ subcategories|length }} sub-categor{{ subcategories|length|pluralize:"y,ies" }}</h3></div>
+    <div class="toolbar-right">
+        <a href="{% url 'library:subcategory_create' %}" class="btn btn-primary"><span class="material-icons-round" style="font-size:18px">add</span> Add Sub-Category</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body" style="padding:0">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead><tr><th>Name</th><th>Parent Category</th><th>Description</th><th>Books</th><th>Actions</th></tr></thead>
+                <tbody>
+                {% for sub in subcategories %}
+                <tr>
+                    <td style="font-weight:500">{{ sub.name }}</td>
+                    <td><span class="badge badge-available">{{ sub.category.name }}</span></td>
+                    <td style="color:var(--text-secondary)">{{ sub.description|truncatechars:50|default:'-' }}</td>
+                    <td>{{ sub.books.count }}</td>
+                    <td>
+                        <a href="{% url 'library:subcategory_edit' sub.pk %}" class="btn btn-outline btn-sm"><span class="material-icons-round" style="font-size:16px">edit</span></a>
+                        <a href="{% url 'library:subcategory_delete' sub.pk %}" class="btn btn-danger btn-sm"><span class="material-icons-round" style="font-size:16px">delete</span></a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5"><div class="empty-state"><p>No sub-categories yet.</p><a href="{% url 'library:subcategory_create' %}" class="btn-primary btn-sm">Create First</a></div></td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

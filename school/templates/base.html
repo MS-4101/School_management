@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}School Management Platform{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Icons+Round" rel="stylesheet">
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+
+{% if messages %}
+<div class="toast-container" id="toastContainer">
+  {% for message in messages %}
+  <div class="toast toast-{{ message.tags }}">
+    <i class="fas {% if 'success' in message.tags %}fa-check-circle{% elif 'error' in message.tags %}fa-times-circle{% else %}fa-info-circle{% endif %}"></i>
+    <span>{{ message }}</span>
+    <button onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% block full_page %}
+
+{% block navbar %}
+<nav class="navbar">
+  <div class="nav-container">
+    <a href="{% url 'dashboard:landing' %}" class="nav-brand" style="display:flex; align-items:center;">
+      <div class="brand-icon" style="margin-right: 0.5rem; font-size: 1.5rem;"><i class="fas fa-school"></i></div>
+      <span class="brand-text" style="font-weight: 700; font-family: var(--font-heading);">School Management</span>
+    </a>
+
+    <!-- Mobile toggle -->
+    <button class="nav-toggle" id="navToggle" aria-label="Menu">
+      <i class="fas fa-bars" id="navToggleIcon"></i>
+    </button>
+
+    <div class="nav-links" id="navLinks">
+      {% if user.is_authenticated %}
+        {% if user.is_school_admin or user.is_superuser or user.roles.all %}
+          <a href="{% url 'dashboard:home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+            <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+          </a>
+          
+          {% if user_section_access.inventory and user_section_access.inventory != 'none' %}
+          <a href="{% url 'inventory:dashboard' %}" class="nav-link {% if 'inventory' in request.path %}active{% endif %}">
+            <i class="fas fa-boxes"></i> <span>Inventory</span>
+          </a>
+          {% endif %}
+          
+          {% if user_section_access.library and user_section_access.library != 'none' %}
+          <a href="{% url 'library:book_list' %}" class="nav-link {% if 'library' in request.path %}active{% endif %}">
+            <i class="fas fa-book"></i> <span>Library</span>
+          </a>
+          {% endif %}
+          
+          {% if user_section_access.lab and user_section_access.lab != 'none' %}
+          <a href="{% url 'lab:equipment_list' %}" class="nav-link {% if 'lab' in request.path %}active{% endif %}">
+            <i class="fas fa-flask"></i> <span>Lab</span>
+          </a>
+          {% endif %}
+
+          {% if user_section_access.access_control and user_section_access.access_control != 'none' %}
+          <a href="{% url 'accounts:access_control' %}" class="nav-link {% if 'access-control' in request.path %}active{% endif %}">
+            <i class="fas fa-shield-alt"></i> <span>Access Control</span>
+          </a>
+          {% endif %}
+          
+        {% elif user.is_parent %}
+          <a href="{% url 'dashboard:parent_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'parent_dashboard' %}active{% endif %}">
+            <i class="fas fa-home"></i> <span>My Children</span>
+          </a>
+        {% else %}
+          <a href="{% url 'dashboard:home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+            <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+          </a>
+        {% endif %}
+
+        <!-- User menu -->
+        <div class="nav-user-menu">
+          <button class="nav-user-btn" id="userMenuBtn">
+            <div class="user-avatar">{{ user.username|first|upper }}</div>
+            <span class="user-name">{{ user.get_full_name|default:user.username }}</span>
+            <i class="fas fa-chevron-down" style="font-size:0.7rem;"></i>
+          </button>
+          <div class="user-dropdown" id="userDropdown">
+            <!-- Add other user dropdown links here -->
+            <a href="{% url 'accounts:logout' %}" class="dropdown-item text-danger">
+              <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+          </div>
+        </div>
+
+      {% elif request.session.bus_login %}
+        <span class="nav-link" style="color: var(--gold-dark); font-weight: 600;">
+          <i class="fas fa-bus"></i> <span>{{ request.session.bus_name }}</span>
+        </span>
+        <a href="{% url 'accounts:bus_logout' %}" class="btn btn-outline btn-sm">
+          <i class="fas fa-sign-out-alt"></i> End Session
+        </a>
+      {% else %}
+        <a href="{% url 'accounts:login' %}" class="btn-primary-sm">
+          <i class="fas fa-sign-in-alt"></i> Login
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+{% endblock %}
+
+{% if user.is_authenticated and request.path != '/' and request.path != '/dashboard/' and request.path != '/parent/' %}
+  {% if 'library' in request.path %}
+  <div class="module-nav">
+    <div class="nav-container module-nav-container">
+      <a href="{% url 'library:book_list' %}" class="module-nav-link {% if 'books' in request.path and 'issue' not in request.path %}active{% endif %}"><span class="material-icons-round">auto_stories</span> Books</a>
+      <a href="{% url 'library:category_list' %}" class="module-nav-link {% if 'categories' in request.path and 'subcategories' not in request.path %}active{% endif %}"><span class="material-icons-round">category</span> Categories</a>
+      <a href="{% url 'library:subcategory_list' %}" class="module-nav-link {% if 'subcategories' in request.path %}active{% endif %}"><span class="material-icons-round">account_tree</span> Sub-Categories</a>
+      <a href="{% url 'library:issue_list' %}" class="module-nav-link {% if 'issue' in request.path %}active{% endif %}"><span class="material-icons-round">assignment</span> Issues</a>
+      <a href="{% url 'library:fine_list' %}" class="module-nav-link {% if 'fines' in request.path %}active{% endif %}"><span class="material-icons-round">payments</span> Fines</a>
+    </div>
+  </div>
+  {% elif 'lab' in request.path %}
+  <div class="module-nav">
+    <div class="nav-container module-nav-container">
+      <a href="{% url 'lab:equipment_list' %}" class="module-nav-link {% if 'equipment' in request.path %}active{% endif %}"><span class="material-icons-round">science</span> Equipment</a>
+      <a href="{% url 'lab:lab_list' %}" class="module-nav-link {% if 'labs' in request.path %}active{% endif %}"><span class="material-icons-round">biotech</span> Labs</a>
+      <a href="{% url 'lab:eq_category_list' %}" class="module-nav-link {% if 'categories' in request.path and 'subcategories' not in request.path %}active{% endif %}"><span class="material-icons-round">category</span> Categories</a>
+      <a href="{% url 'lab:eq_subcategory_list' %}" class="module-nav-link {% if 'subcategories' in request.path %}active{% endif %}"><span class="material-icons-round">account_tree</span> Sub-Categories</a>
+      <a href="{% url 'lab:booking_list' %}" class="module-nav-link {% if 'bookings' in request.path %}active{% endif %}"><span class="material-icons-round">event_note</span> Bookings</a>
+    </div>
+  </div>
+  {% elif 'inventory' in request.path %}
+  <div class="module-nav">
+    <div class="nav-container module-nav-container">
+      <a href="{% url 'inventory:dashboard' %}" class="module-nav-link {% if request.path == '/inventory/' %}active{% endif %}"><span class="material-icons-round">dashboard</span> Dashboard</a>
+      <a href="{% url 'inventory:commodity_list' %}" class="module-nav-link {% if 'items' in request.path %}active{% endif %}"><span class="material-icons-round">inventory_2</span> Items</a>
+      <a href="{% url 'inventory:inv_category_list' %}" class="module-nav-link {% if 'categories' in request.path %}active{% endif %}"><span class="material-icons-round">category</span> Categories</a>
+      <a href="{% url 'inventory:supplier_list' %}" class="module-nav-link {% if 'suppliers' in request.path %}active{% endif %}"><span class="material-icons-round">local_shipping</span> Suppliers</a>
+      <a href="{% url 'inventory:po_list' %}" class="module-nav-link {% if 'po' in request.path %}active{% endif %}"><span class="material-icons-round">receipt_long</span> Purchase Orders</a>
+    </div>
+  </div>
+  {% endif %}
+{% endif %}
+
+<main class="main-content">
+  {% block content %}{% endblock %}
+</main>
+
+{% block footer %}
+<footer class="footer" style="padding: 2rem 0; text-align: center; border-top: 1px solid var(--border-light); margin-top: 2rem;">
+  <div class="footer-container">
+    <div class="footer-brand" style="margin-bottom: 1rem; color: var(--text-dark);">
+      <div class="brand-icon-sm" style="font-size: 1.5rem; margin-bottom: 0.5rem;"><i class="fas fa-school"></i></div>
+      <span style="font-family: var(--font-heading); font-weight: 600;">School Management Platform</span>
+    </div>
+    <p class="footer-copy" style="color: var(--text-muted); font-size: 0.9rem;">&copy; 2025 VAIDITECH. All rights reserved.</p>
+  </div>
+</footer>
+{% endblock %}
+
+{% endblock %}
+
+{% load static %}
+<script src="{% static 'js/main.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

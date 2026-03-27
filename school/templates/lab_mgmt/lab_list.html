@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}Labs — LibLab{% endblock %}
+{% block page_title %}Laboratories{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+    <div class="toolbar-left"><h3 style="font-size:15px;color:var(--text-secondary)">{{ labs.count }} lab{{ labs.count|pluralize }}</h3></div>
+    <div class="toolbar-right">
+        <a href="{% url 'lab:lab_create' %}" class="btn btn-primary"><span class="material-icons-round" style="font-size:18px">add</span> Add Lab</a>
+    </div>
+</div>
+
+<div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
+    {% for lab in labs %}
+    <div class="card" style="overflow:visible">
+        <div class="card-body">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+                <div class="stat-icon cyan"><span class="material-icons-round">science</span></div>
+                <div>
+                    <h3 style="font-size:16px;font-weight:600">{{ lab.name }}</h3>
+                    {% if lab.location %}<small style="color:var(--text-muted)">📍 {{ lab.location }}</small>{% endif %}
+                </div>
+            </div>
+            {% if lab.description %}<p style="color:var(--text-secondary);font-size:13px;margin-bottom:12px">{{ lab.description|truncatechars:80 }}</p>{% endif %}
+            <div style="display:flex;gap:16px;font-size:13px;color:var(--text-muted);margin-bottom:12px">
+                <span>👥 Capacity: {{ lab.capacity }}</span>
+                <span>🔧 Equipment: {{ lab.equipment.count }}</span>
+            </div>
+            <div style="display:flex;gap:6px">
+                {% if lab.is_active %}<span class="badge badge-approved">Active</span>{% else %}<span class="badge badge-overdue">Inactive</span>{% endif %}
+            </div>
+        </div>
+        <div class="card-footer">
+            <a href="{% url 'lab:lab_edit' lab.pk %}" class="btn btn-outline btn-sm"><span class="material-icons-round" style="font-size:16px">edit</span></a>
+            <a href="{% url 'lab:lab_delete' lab.pk %}" class="btn btn-danger btn-sm"><span class="material-icons-round" style="font-size:16px">delete</span></a>
+        </div>
+    </div>
+    {% empty %}
+    <div class="card"><div class="card-body"><div class="empty-state"><div class="empty-icon"><span class="material-icons-round">science</span></div><p>No labs created yet.</p><a href="{% url 'lab:lab_create' %}" class="btn-primary btn-sm">Create First Lab</a></div></div></div>
+    {% endfor %}
+</div>
+{% endblock %}
